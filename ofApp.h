@@ -14,10 +14,14 @@ public:
 	void videoSetup();
 	void ofSoundStreamSetup(ofSoundStreamSettings &settings);
 	array<float, 2> sample;
+	void renderSample();
 	void audioOut(ofSoundBuffer &buffer);
+	float width;
+	float height;
 	ofFbo frameBuffer;
 	ofShader shader;
 	void refresh();
+	void setUniforms();
 	void draw();
 
 	void keyPressed(int key);

@@ -33,12 +33,20 @@ void ofApp::ofSoundStreamSetup(ofSoundStreamSettings &settings) {
 
 }
 
+void ofApp::renderSample() {
+
+}
+
 void ofApp::audioOut(ofSoundBuffer &buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		for (int b = 0; b < channels; b++) {
 			buffer[a * channels + b] = sample[b];
 		}
 	}
+}
+
+void ofApp::setUniforms() {
+
 }
 
 //--------------------------------------------------------------
