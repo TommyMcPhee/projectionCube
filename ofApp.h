@@ -15,8 +15,10 @@ public:
 	void ofSoundStreamSetup(ofSoundStreamSettings& settings);
 	void audioSetup();
 	void videoSetup();
+	array<float, 2> pan;
 	array<float, 2> sample;
 	float lerp(float inputA, float inputB, float mix);
+	float lookup(int index, float envelopeData);
 	void audioOut(ofSoundBuffer& buffer);
 	float width;
 	float height;
@@ -40,7 +42,8 @@ public:
 	void gotMessage(ofMessage msg);
 	array<int, 8> row;
 	array<array<float, 5>, 8> envelopes;
-
+	static const int layers = 4;
+	array<array<float, 2>, layers> envelopeFractal;
 	array<float, 2> envelope = { 0.0, 0.01 };
 	int rowIndex = 0;
 };
