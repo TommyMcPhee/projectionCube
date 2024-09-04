@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include <cmath>
 
 class ofApp : public ofBaseApp {
 
@@ -10,14 +11,16 @@ public:
 	static const int sampleRate = 48000;
 	static const int bufferSize = 256;
 	static const int channels = 2;
+	ofSoundStream stream;
+	void ofSoundStreamSetup(ofSoundStreamSettings& settings);
 	void audioSetup();
 	void videoSetup();
-	void ofSoundStreamSetup(ofSoundStreamSettings &settings);
 	array<float, 2> sample;
-	void renderSample();
-	void audioOut(ofSoundBuffer &buffer);
+	float lerp(float inputA, float inputB, float mix);
+	void audioOut(ofSoundBuffer& buffer);
 	float width;
 	float height;
+	ofVec2f window;
 	ofFbo frameBuffer;
 	ofShader shader;
 	void refresh();
@@ -37,4 +40,7 @@ public:
 	void gotMessage(ofMessage msg);
 	array<int, 8> row;
 	array<array<float, 5>, 8> envelopes;
+
+	array<float, 2> envelope = { 0.0, 0.01 };
+	int rowIndex = 0;
 };

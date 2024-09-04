@@ -12,8 +12,15 @@ void ofApp::setup() {
 	envelopes[5] = { 1.0, twoThirds, oneThird, 0.0, 1.0 };
 	envelopes[6] = { 1.0, 0.5, 0.0, 0.5, 1.0 };
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
+	for (int a = 0; a < 8; a++) {
+		
+	}
 	audioSetup();
-	videoSetup();
+	//videoSetup();
+}
+
+void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
+
 }
 
 void ofApp::audioSetup() {
@@ -22,24 +29,28 @@ void ofApp::audioSetup() {
 	streamSettings.sampleRate = sampleRate;
 	streamSettings.bufferSize = bufferSize;
 	streamSettings.numOutputChannels = channels;
-	ofSoundStreamSetup(streamSettings);
+	stream.setup(streamSettings);
 }
 
 void ofApp::videoSetup() {
 
 }
 
-void ofApp::ofSoundStreamSetup(ofSoundStreamSettings &settings) {
-
+float ofApp::lerp(float inputA, float inputB, float mix) {
+	return inputB * (1.0 - mix) + (inputA * mix);
 }
 
-void ofApp::renderSample() {
-
-}
-
-void ofApp::audioOut(ofSoundBuffer &buffer) {
+void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		for (int b = 0; b < channels; b++) {
+			envelope[0] += envelope[1];
+			if (envelope[0] >= 4.0) {
+				envelope[0] -= 4.0;
+				rowIndex++;
+				rowIndex %= 7;
+			}
+			int envelopeIndex = trunc(envelope[0]);
+			sample[b] = lerp(envelopes[rowIndex][envelopeIndex], envelopes[rowIndex][envelopeIndex + 1], fmod(envelope[0], 1.0)) * 2.0 - 1.0;
 			buffer[a * channels + b] = sample[b];
 		}
 	}
