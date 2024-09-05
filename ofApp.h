@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include <cmath>
+#include "envelopeData.h"
 
 class ofApp : public ofBaseApp {
 

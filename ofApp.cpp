@@ -40,13 +40,9 @@ float ofApp::lerp(float inputA, float inputB, float mix) {
 	return inputB * (1.0 - mix) + (inputA * mix);
 }
 
-float ofApp::lookup(int index, array<float, 2> envelopeData) {
-
-}
-
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
-		pan[0] = lerp()
+		//pan[0] = lerp()
 		for (int b = 0; b < channels; b++) {
 			envelope[0] += envelope[1];
 			if (envelope[0] >= 4.0) {
