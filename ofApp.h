@@ -47,4 +47,6 @@ public:
 	array<array<float, 2>, layers> envelopeFractal;
 	array<float, 2> envelope = { 0.0, 0.01 };
 	int rowIndex = 0;
+
+	//envelopeData env;
 };

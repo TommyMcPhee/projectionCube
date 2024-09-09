@@ -2,6 +2,17 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+	/*
+	if (__cplusplus == 202101L) std::cout << "C++23";
+	else if (__cplusplus == 202002L) std::cout << "C++20";
+	else if (__cplusplus == 201703L) std::cout << "C++17";
+	else if (__cplusplus == 201402L) std::cout << "C++14";
+	else if (__cplusplus == 201103L) std::cout << "C++11";
+	else if (__cplusplus == 199711L) std::cout << "C++98";
+	else std::cout << "pre-standard C++." << __cplusplus;
+	std::cout << "\n";
+	*/
+	//env = envelopeData(0, 0.0, 0.1);
 	static const float oneThird = 1.0 / 3.0;
 	static const float twoThirds = 2.0 / 3.0;
 	envelopes[0] = { 0.0, 0.25, 0.5, 0.75, 1.0 };
@@ -34,10 +45,6 @@ void ofApp::audioSetup() {
 
 void ofApp::videoSetup() {
 
-}
-
-float ofApp::lerp(float inputA, float inputB, float mix) {
-	return inputB * (1.0 - mix) + (inputA * mix);
 }
 
 void ofApp::audioOut(ofSoundBuffer& buffer) {
