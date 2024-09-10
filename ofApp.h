@@ -43,10 +43,10 @@ public:
 	void gotMessage(ofMessage msg);
 	array<array<int, 8>, 8> rows;
 	array<array<float, 5>, 8> envelopes;
-	//static const int layers = 4;
-	//array<array<float, 2>, layers> envelopeFractal;
+	static const int layers = 4;
+	array<envelopeData, layers> envelopeFractal;
+	array<int, layers> indicies;
+	// temp tests
 	array<float, 2> envelope = { 0.0, 0.1 };
 	int rowIndex = 0;
-
-	//envelopeData env;
 };

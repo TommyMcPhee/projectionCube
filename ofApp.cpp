@@ -33,15 +33,15 @@ void ofApp::setup() {
 	envelopes[5] = { 1.0, twoThirds, oneThird, 0.0, 1.0 };
 	envelopes[6] = { 1.0, 0.5, 0.0, 0.5, 1.0 };
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
-	for (int a = 0; a < 8; a++) {
-		
+	for (int a = 0; a < layers; a++) {
+		envelopeFractal[a] = envelopeData(rand() % 8, 0.0, pow(abs(ofRandomf()), 1 + a));
 	}
 	audioSetup();
 	//videoSetup();
 }
 
 void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
-
+	
 }
 
 void ofApp::audioSetup() {
@@ -54,16 +54,26 @@ void ofApp::audioSetup() {
 }
 
 void ofApp::videoSetup() {
-
+	shader.load("serialShader");
+	frameBuffer.allocate(ofGetScreenWidth(), ofGetScreenHeight());
+	frameBuffer.clear();
 }
 //temporary
+/*
 float ofApp::lerp(float inputA, float inputB, float mix) {
 	return inputB * (1.0 - mix) + (inputA * mix);
 }
+*/
 //
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
-		//pan[0] = lerp()
+		pan[0] = 0.5;
+		pan[1] = (1.0 - pan[0]);
+		for (int b = 0; b < layers; b++) {
+			int currentRowIndex = envelopeFractal[a].returnRowIndex();
+			int currentEnvelopeIndex = envelopeFractal[a].returnEnvelopeIndex();
+			float envelopeValue = lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
+		}
 		for (int b = 0; b < channels; b++) {
 			envelope[0] += envelope[1];
 			if (envelope[0] >= 4.0) {
@@ -73,7 +83,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 			}
 			int rowValue = rows[0][rowIndex];
 			int envelopeIndex = trunc(envelope[0]);
-			sample[b] = lerp(envelopes[rowValue][envelopeIndex], envelopes[rowIndex][envelopeIndex + 1], fmod(envelope[0], 1.0)) * 2.0 - 1.0;
+			//sample[b] = sqrt(pan[b]) * lerp(envelopes[rowValue][envelopeIndex], envelopes[rowIndex][envelopeIndex + 1], fmod(envelope[0], 1.0)) * 2.0 - 1.0;
 			buffer[a * channels + b] = sample[b];
 		}
 	}
