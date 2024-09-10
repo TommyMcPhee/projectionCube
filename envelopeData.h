@@ -1,13 +1,24 @@
 #pragma once
+
+#ifndef envelopeData_h
+#define envelopeData_h
+
 #include <stdio.h>
+#include <cmath>
+#include <ofApp.h>
 
 class envelopeData {
 public:
 	envelopeData();
-	envelopeData(int _index, float _position, float _increment);
+	envelopeData(int _rowIndex, float _position, float _increment);
 	void setIncrement(float _increment);
-	float read();
+	int returnRowIndex();
+	int returnEnvelopeIndex();
+	float lerp(float inputA, float inputB);
+	int rowIndex, envelopeIndex;
 private:
-	int index;
+	float iterate();
 	float position, increment;
 };
+
+#endif

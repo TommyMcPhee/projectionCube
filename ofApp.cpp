@@ -2,17 +2,27 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	/*
-	if (__cplusplus == 202101L) std::cout << "C++23";
-	else if (__cplusplus == 202002L) std::cout << "C++20";
-	else if (__cplusplus == 201703L) std::cout << "C++17";
-	else if (__cplusplus == 201402L) std::cout << "C++14";
-	else if (__cplusplus == 201103L) std::cout << "C++11";
-	else if (__cplusplus == 199711L) std::cout << "C++98";
-	else std::cout << "pre-standard C++." << __cplusplus;
-	std::cout << "\n";
-	*/
-	//env = envelopeData(0, 0.0, 0.1);
+	vector<int> indicies;
+	for (int a = 0; a < 8; a++) {
+		indicies.push_back(a);
+	}
+	for (int a = 0; a < 8; a++) {
+		int randomIndex = rand() % indicies.size();
+		rows[0][a] = indicies[randomIndex];
+		auto erasePosition = indicies.begin() + randomIndex;
+		indicies.erase(erasePosition);
+	}
+	//check for undesirable symmetries before proceeding
+	for (int a = 0; a < 8; a++) {
+		rows[2][a] = 7 - rows[0][a];
+		rows[4][a] = rows[0][a] * 3 % 8;
+		rows[6][a] = rows[0][a] * 5 % 8;
+	}
+	for (int a = 0; a < 8; a++) {
+		for (int b = 1; b < 8; b++) {
+			rows[b][a] = rows[b - 1][7 - a];
+		}
+	}
 	static const float oneThird = 1.0 / 3.0;
 	static const float twoThirds = 2.0 / 3.0;
 	envelopes[0] = { 0.0, 0.25, 0.5, 0.75, 1.0 };
@@ -46,7 +56,11 @@ void ofApp::audioSetup() {
 void ofApp::videoSetup() {
 
 }
-
+//temporary
+float ofApp::lerp(float inputA, float inputB, float mix) {
+	return inputB * (1.0 - mix) + (inputA * mix);
+}
+//
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		//pan[0] = lerp()
@@ -57,8 +71,9 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				rowIndex++;
 				rowIndex %= 7;
 			}
+			int rowValue = rows[0][rowIndex];
 			int envelopeIndex = trunc(envelope[0]);
-			sample[b] = pan[b] * lerp(envelopes[rowIndex][envelopeIndex], envelopes[rowIndex][envelopeIndex + 1], fmod(envelope[0], 1.0)) * 2.0 - 1.0;
+			sample[b] = lerp(envelopes[rowValue][envelopeIndex], envelopes[rowIndex][envelopeIndex + 1], fmod(envelope[0], 1.0)) * 2.0 - 1.0;
 			buffer[a * channels + b] = sample[b];
 		}
 	}
