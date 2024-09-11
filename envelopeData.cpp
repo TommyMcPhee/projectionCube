@@ -11,7 +11,7 @@ envelopeData::envelopeData(int _index, float _position, float _increment) {
 }
 
 void envelopeData::setIncrement(float _increment) {
-	increment = _increment;
+	increment = fmod(_increment, 4.0);
 }
 
 float envelopeData::iterate() {
@@ -21,7 +21,7 @@ float envelopeData::iterate() {
 		rowIndex %= 7;
 		position -= 4.0;
 	}
-	envelopeIndex = trunc(position);
+	//envelopeIndex = (int)trunc(position);
 	return fmod(position, 1.0);
 }
 

@@ -41,7 +41,7 @@ void ofApp::setup() {
 }
 
 void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
-	
+
 }
 
 void ofApp::audioSetup() {
@@ -67,7 +67,6 @@ float ofApp::lerp(float inputA, float inputB, float mix) {
 //
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
-		/*
 		pan[0] = 0.5;
 		pan[1] = (1.0 - pan[0]);
 		for (int b = 0; b < layers; b++) {
@@ -75,7 +74,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 			int currentEnvelopeIndex = envelopeFractal[b].returnEnvelopeIndex();
 			float envelopeValue = envelopeFractal[b].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 			if (b > 0) {
-				envelopeFractal[b - 1].setIncrement(pow(envelopeValue, 1.0 / (float)b));
+				envelopeFractal[b - 1].setIncrement(envelopeValue / (float)(pow(b + layers, b)));
 			}
 			else {
 				for (int c = 0; c < channels; c++) {

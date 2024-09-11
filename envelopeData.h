@@ -14,7 +14,7 @@ public:
 	int returnRowIndex();
 	int returnEnvelopeIndex();
 	float lerp(float inputA, float inputB);
-	int rowIndex, envelopeIndex;
+	int rowIndex, envelopeIndex = 0;
 private:
 	float iterate();
 	float position, increment;
