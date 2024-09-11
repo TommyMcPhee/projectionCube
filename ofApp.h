@@ -19,7 +19,7 @@ public:
 	array<float, 2> pan;
 	array<float, 2> sample;
 	//temporary
-	float lerp(float inputA, float inputB, float mix);
+	//float lerp(float inputA, float inputB, float mix);
 	void audioOut(ofSoundBuffer& buffer);
 	float width;
 	float height;
@@ -47,6 +47,8 @@ public:
 	array<envelopeData, layers> envelopeFractal;
 	array<int, layers> indicies;
 	// temp tests
+	/*
 	array<float, 2> envelope = { 0.0, 0.1 };
 	int rowIndex = 0;
+	*/
 };

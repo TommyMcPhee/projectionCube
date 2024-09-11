@@ -5,7 +5,6 @@
 
 #include <stdio.h>
 #include <cmath>
-#include <ofApp.h>
 
 class envelopeData {
 public:

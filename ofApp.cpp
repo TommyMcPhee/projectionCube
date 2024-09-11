@@ -67,13 +67,24 @@ float ofApp::lerp(float inputA, float inputB, float mix) {
 //
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
+		/*
 		pan[0] = 0.5;
 		pan[1] = (1.0 - pan[0]);
 		for (int b = 0; b < layers; b++) {
-			int currentRowIndex = envelopeFractal[a].returnRowIndex();
-			int currentEnvelopeIndex = envelopeFractal[a].returnEnvelopeIndex();
-			float envelopeValue = lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
+			int currentRowIndex = envelopeFractal[b].returnRowIndex();
+			int currentEnvelopeIndex = envelopeFractal[b].returnEnvelopeIndex();
+			float envelopeValue = envelopeFractal[b].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
+			if (b > 0) {
+				envelopeFractal[b - 1].setIncrement(pow(envelopeValue, 1.0 / (float)b));
+			}
+			else {
+				for (int c = 0; c < channels; c++) {
+					sample[c] = envelopeValue;
+					buffer[a * channels + c] = sample[c];
+				}
+			}
 		}
+		/*
 		for (int b = 0; b < channels; b++) {
 			envelope[0] += envelope[1];
 			if (envelope[0] >= 4.0) {
@@ -86,8 +97,10 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 			//sample[b] = sqrt(pan[b]) * lerp(envelopes[rowValue][envelopeIndex], envelopes[rowIndex][envelopeIndex + 1], fmod(envelope[0], 1.0)) * 2.0 - 1.0;
 			buffer[a * channels + b] = sample[b];
 		}
+		*/
 	}
 }
+
 
 void ofApp::setUniforms() {
 
