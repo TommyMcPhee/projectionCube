@@ -33,8 +33,10 @@ void ofApp::setup() {
 	envelopes[5] = { 1.0, twoThirds, oneThird, 0.0, 1.0 };
 	envelopes[6] = { 1.0, 0.5, 0.0, 0.5, 1.0 };
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
-	for (int a = 0; a < layers; a++) {
-		envelopeFractal[a] = envelopeData(rand() % 8, 0.0, pow(abs(ofRandomf()), 1 + a));
+	for (int a = 0; a < 4; a++) {
+		for (int b = 0; b < 3; b++) {
+			envelopeFractal[a][b] = envelopeData(rand() % 8, 0.0, frequencyLimit * pow(abs(ofRandomf()), 1 + b));
+		}
 	}
 	audioSetup();
 	//videoSetup();
@@ -58,45 +60,32 @@ void ofApp::videoSetup() {
 	frameBuffer.allocate(ofGetScreenWidth(), ofGetScreenHeight());
 	frameBuffer.clear();
 }
-//temporary
-/*
-float ofApp::lerp(float inputA, float inputB, float mix) {
-	return inputB * (1.0 - mix) + (inputA * mix);
-}
-*/
-//
+
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
-		pan[0] = 0.5;
-		pan[1] = (1.0 - pan[0]);
-		for (int b = 0; b < layers; b++) {
-			int currentRowIndex = envelopeFractal[b].returnRowIndex();
-			int currentEnvelopeIndex = envelopeFractal[b].returnEnvelopeIndex();
-			float envelopeValue = envelopeFractal[b].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
-			if (b > 0) {
-				envelopeFractal[b - 1].setIncrement(envelopeValue / (float)(pow(b + layers, b)));
-			}
-			else {
-				for (int c = 0; c < channels; c++) {
-					sample[c] = envelopeValue;
-					buffer[a * channels + c] = sample[c];
+		for (int b = 0; b < 4; b++) {
+			for (int c = 0; c < 3; c++) {
+				currentRowIndicies[b] = envelopeFractal[b][c].returnRowIndex();
+				currentEnvelopeIndicies[b] = envelopeFractal[b][c].returnEnvelopeIndex();
+				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b]], envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b] + 1]);
+				if (c > 0) {
+					envelopeFractal[b][c - 1].setIncrement(currentValues[b] / (float)(pow(c + 3, c)));
+				}
+				else {
+					pan[0] = currentValues[3];
+					pan[1] = (1.0 - pan[0]);
+					float phaseIncrement = currentValues[0] * frequencyLimit;
+					float detune = (2.0 * currentValues[1] - 1.0) * currentValues[0];
+					phase[0] += currentValues[0] + detune;
+					phase[1] += currentValues[0] - detune;
+					for (int d = 0; d < channels; d++) {
+						phase[d] = fmod(phase[d], TWO_PI);
+						sample[d] = sin(phase[d]) * sqrt(pan[d]) * currentValues[2];
+						buffer[a * channels + d] = sample[d];
+					}
 				}
 			}
 		}
-		/*
-		for (int b = 0; b < channels; b++) {
-			envelope[0] += envelope[1];
-			if (envelope[0] >= 4.0) {
-				envelope[0] -= 4.0;
-				rowIndex++;
-				rowIndex %= 7;
-			}
-			int rowValue = rows[0][rowIndex];
-			int envelopeIndex = trunc(envelope[0]);
-			//sample[b] = sqrt(pan[b]) * lerp(envelopes[rowValue][envelopeIndex], envelopes[rowIndex][envelopeIndex + 1], fmod(envelope[0], 1.0)) * 2.0 - 1.0;
-			buffer[a * channels + b] = sample[b];
-		}
-		*/
 	}
 }
 

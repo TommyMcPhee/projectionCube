@@ -16,6 +16,10 @@ public:
 	void ofSoundStreamSetup(ofSoundStreamSettings& settings);
 	void audioSetup();
 	void videoSetup();
+	const float frequencyLimit = 0.00002;
+	array<int, 4> currentRowIndicies;
+	array<int, 4> currentEnvelopeIndicies;
+	array<float, 4> currentValues;
 	array<float, 2> pan;
 	array<float, 2> sample;
 	//temporary
@@ -29,7 +33,6 @@ public:
 	void refresh();
 	void setUniforms();
 	void draw();
-
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void mouseMoved(int x, int y);
@@ -43,12 +46,7 @@ public:
 	void gotMessage(ofMessage msg);
 	array<array<int, 8>, 8> rows;
 	array<array<float, 5>, 8> envelopes;
-	static const int layers = 5;
-	array<envelopeData, layers> envelopeFractal;
-	array<int, layers> indicies;
-	// temp tests
-	/*
-	array<float, 2> envelope = { 0.0, 0.1 };
-	int rowIndex = 0;
-	*/
+	array<array<envelopeData, 3>, 4> envelopeFractal;
+	array<int, 3> indicies;
+	array<float, 2> phase;
 };
