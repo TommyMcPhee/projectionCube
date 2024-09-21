@@ -39,7 +39,7 @@ void ofApp::setup() {
 		}
 	}
 	audioSetup();
-	//videoSetup();
+	videoSetup();
 }
 
 void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
@@ -67,11 +67,16 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 			for (int c = 0; c < 3; c++) {
 				currentRowIndicies[b] = envelopeFractal[b][c].returnRowIndex();
 				currentEnvelopeIndicies[b] = envelopeFractal[b][c].returnEnvelopeIndex();
+				lastValues[b] = currentValues[b];
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b]], envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b] + 1]);
-				if (c > 0) {
-					envelopeFractal[b][c - 1].setIncrement(currentValues[b] / (float)(pow(c + 3, c)));
-				}
-				else {
+				switch (c) {
+				case 2:
+					envelopeFractal[b][c - 1].setIncrement(frequencyLimit * currentValues[b] * lastValues[b]);
+					break;
+				case 1:
+					envelopeFractal[b][c - 1].setIncrement(frequencyLimit * currentValues[b]);
+					break;
+				case 0:
 					pan[0] = currentValues[3];
 					pan[1] = (1.0 - pan[0]);
 					float phaseIncrement = currentValues[0] * frequencyLimit;
@@ -83,6 +88,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 						sample[d] = sin(phase[d]) * sqrt(pan[d]) * currentValues[2];
 						buffer[a * channels + d] = sample[d];
 					}
+					break;
 				}
 			}
 		}

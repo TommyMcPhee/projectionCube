@@ -16,14 +16,13 @@ public:
 	void ofSoundStreamSetup(ofSoundStreamSettings& settings);
 	void audioSetup();
 	void videoSetup();
-	const float frequencyLimit = 0.00002;
+	const float frequencyLimit = 0.001;
 	array<int, 4> currentRowIndicies;
 	array<int, 4> currentEnvelopeIndicies;
+	array<float, 4> lastValues;
 	array<float, 4> currentValues;
 	array<float, 2> pan;
 	array<float, 2> sample;
-	//temporary
-	//float lerp(float inputA, float inputB, float mix);
 	void audioOut(ofSoundBuffer& buffer);
 	float width;
 	float height;
