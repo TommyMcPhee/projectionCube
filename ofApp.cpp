@@ -3,24 +3,43 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
 	vector<int> indicies;
-	for (int a = 0; a < 8; a++) {
-		indicies.push_back(a);
-	}
-	for (int a = 0; a < 8; a++) {
-		int randomIndex = rand() % indicies.size();
-		rows[0][a] = indicies[randomIndex];
-		auto erasePosition = indicies.begin() + randomIndex;
-		indicies.erase(erasePosition);
-	}
-	//check for undesirable symmetries before proceeding
-	for (int a = 0; a < 8; a++) {
-		rows[2][a] = 7 - rows[0][a];
-		rows[4][a] = rows[0][a] * 3 % 8;
-		rows[6][a] = rows[0][a] * 5 % 8;
-	}
-	for (int a = 0; a < 8; a++) {
-		for (int b = 1; b < 8; b++) {
-			rows[b][a] = rows[b - 1][7 - a];
+	bool symmetry = false;
+	while (!symmetry) {
+		for (int a = 0; a < 8; a++) {
+			indicies.push_back(a);
+		}
+		for (int a = 0; a < 8; a++) {
+			int randomIndex = rand() % indicies.size();
+			rows[0][a] = indicies[randomIndex];
+			auto erasePosition = indicies.begin() + randomIndex;
+			indicies.erase(erasePosition);
+		}
+		for (int a = 0; a < 4; a++) {
+			if (rows[0][7 - a] != 7 - rows[0][a]) {
+				break;
+			}
+			else {
+				if (a == 3) {
+					symmetry = true;
+				}
+			}
+		}
+		/*
+		for (int a = 0; a < 8; a++) {
+			rows[2][a] = 7 - rows[0][a];
+			rows[4][a] = rows[0][a] * 3 % 8;
+			rows[6][a] = rows[0][a] * 5 % 8;
+		}
+		for (int a = 0; a < 8; a++) {
+			for (int b = 1; b < 8; b++) {
+				rows[b][a] = rows[b - 1][7 - a];
+			}
+		}
+		*/
+		for (int a = 0; a < 8; a++) {
+			rows[1][a] = rows[0][7 - a];
+			rows[2][a] = rows[0][a] * 3 % 8;
+			rows[3][a] = rows[0][a] * 5 % 8;
 		}
 	}
 	static const float oneThird = 1.0 / 3.0;
@@ -35,7 +54,7 @@ void ofApp::setup() {
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
 	for (int a = 0; a < 4; a++) {
 		for (int b = 0; b < 3; b++) {
-			envelopeFractal[a][b] = envelopeData(rand() % 8, 0.0, frequencyLimit * pow(abs(ofRandomf()), 1 + b));
+			envelopeFractal[a][b] = envelopeData(rand() % 8, 0.0, frequencyLimit);
 		}
 	}
 	audioSetup();
@@ -113,6 +132,7 @@ void ofApp::draw() {
 }
 
 void ofApp::refresh() {
+	frequencyLimit = 6.0 * (float)(ofGetFrameRate() / sampleRate);
 	width = (float)ofGetWidth();
 	height = (float)ofGetHeight();
 	frameBuffer.allocate(width, height);

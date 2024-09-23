@@ -21,7 +21,6 @@ float envelopeData::iterate() {
 		rowIndex %= 7;
 		position -= 4.0;
 	}
-	//envelopeIndex = (int)trunc(position);
 	return fmod(position, 1.0);
 }
 

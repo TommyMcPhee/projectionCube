@@ -16,7 +16,7 @@ public:
 	void ofSoundStreamSetup(ofSoundStreamSettings& settings);
 	void audioSetup();
 	void videoSetup();
-	const float frequencyLimit = 0.001;
+	float frequencyLimit;
 	array<int, 4> currentRowIndicies;
 	array<int, 4> currentEnvelopeIndicies;
 	array<float, 4> lastValues;
@@ -43,7 +43,7 @@ public:
 	void windowResized(int w, int h);
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
-	array<array<int, 8>, 8> rows;
+	array<array<int, 8>, 4> rows;
 	array<array<float, 5>, 8> envelopes;
 	array<array<envelopeData, 3>, 4> envelopeFractal;
 	array<int, 3> indicies;
