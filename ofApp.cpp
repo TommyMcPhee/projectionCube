@@ -40,13 +40,11 @@ void ofApp::setup() {
 	envelopes[5] = { 1.0, twoThirds, oneThird, 0.0, 1.0 };
 	envelopes[6] = { 1.0, 0.5, 0.0, 0.5, 1.0 };
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
-	/*
-	for (int a = 0; a < 4; a++) {
-		for (int b = 0; b < 3; b++) {
-			envelopeFractal[a][b] = envelopeData(rand() % 8, 0.0, frequencyLimit);
+	for (int a = 0; a < 10; a++) {
+		for (int b = 0; b < 4; b++) {
+			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomf(), frequencyLimit);
 		}
 	}
-	*/
 	audioSetup();
 	videoSetup();
 }
@@ -78,7 +76,6 @@ float ofApp::iterateRow(envelopeData parameter) {
 
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
-		/*
 		for (int b = 0; b < 4; b++) {
 			for (int c = 0; c < 3; c++) {
 				currentRowIndicies[b] = envelopeFractal[b][c].returnRowIndex();
@@ -108,7 +105,6 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				}
 			}
 		}
-		*/
 		panPosition = iterateRow(panEnvelope);
 		pan[0] = panPosition;
 		pan[1] = (1.0 - panPosition);

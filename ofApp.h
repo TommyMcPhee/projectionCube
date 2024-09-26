@@ -46,7 +46,7 @@ public:
 	envelopeData amplitudeDelta;
 	envelopeData amplitudeEnvelope;
 	float panPosition, phaseIncrement, detune;
-	//array<array<envelopeData, 3>, 4> envelopeFractal;
+	array<array<envelopeData, 10>, 4> envelopeFractal;
 	array<int, 3> indicies;
 	array<float, 2> phase;
 };
