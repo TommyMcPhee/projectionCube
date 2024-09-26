@@ -17,10 +17,13 @@ public:
 	void audioSetup();
 	void videoSetup();
 	float frequencyLimit;
+	/*
 	array<int, 4> currentRowIndicies;
 	array<int, 4> currentEnvelopeIndicies;
 	array<float, 4> lastValues;
 	array<float, 4> currentValues;
+	*/
+	float iterateRow(envelopeData parameter);
 	array<float, 2> pan;
 	array<float, 2> sample;
 	void audioOut(ofSoundBuffer& buffer);
@@ -32,20 +35,18 @@ public:
 	void refresh();
 	void setUniforms();
 	void draw();
-	void keyPressed(int key);
-	void keyReleased(int key);
-	void mouseMoved(int x, int y);
-	void mouseDragged(int x, int y, int button);
-	void mousePressed(int x, int y, int button);
-	void mouseReleased(int x, int y, int button);
-	void mouseEntered(int x, int y);
-	void mouseExited(int x, int y);
-	void windowResized(int w, int h);
-	void dragEvent(ofDragInfo dragInfo);
-	void gotMessage(ofMessage msg);
 	array<array<int, 8>, 4> rows;
 	array<array<float, 5>, 8> envelopes;
-	array<array<envelopeData, 3>, 4> envelopeFractal;
+	envelopeData spreadDelta;
+	envelopeData spreadEnvelope;
+	envelopeData panDelta;
+	envelopeData panEnvelope;
+	envelopeData frequencyDelta;
+	envelopeData frequencyEnvelope;
+	envelopeData amplitudeDelta;
+	envelopeData amplitudeEnvelope;
+	float panPosition, phaseIncrement, detune;
+	//array<array<envelopeData, 3>, 4> envelopeFractal;
 	array<int, 3> indicies;
 	array<float, 2> phase;
 };

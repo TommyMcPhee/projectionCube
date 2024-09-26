@@ -24,18 +24,6 @@ void ofApp::setup() {
 				}
 			}
 		}
-		/*
-		for (int a = 0; a < 8; a++) {
-			rows[2][a] = 7 - rows[0][a];
-			rows[4][a] = rows[0][a] * 3 % 8;
-			rows[6][a] = rows[0][a] * 5 % 8;
-		}
-		for (int a = 0; a < 8; a++) {
-			for (int b = 1; b < 8; b++) {
-				rows[b][a] = rows[b - 1][7 - a];
-			}
-		}
-		*/
 		for (int a = 0; a < 8; a++) {
 			rows[1][a] = rows[0][7 - a];
 			rows[2][a] = rows[0][a] * 3 % 8;
@@ -52,11 +40,13 @@ void ofApp::setup() {
 	envelopes[5] = { 1.0, twoThirds, oneThird, 0.0, 1.0 };
 	envelopes[6] = { 1.0, 0.5, 0.0, 0.5, 1.0 };
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
+	/*
 	for (int a = 0; a < 4; a++) {
 		for (int b = 0; b < 3; b++) {
 			envelopeFractal[a][b] = envelopeData(rand() % 8, 0.0, frequencyLimit);
 		}
 	}
+	*/
 	audioSetup();
 	videoSetup();
 }
@@ -80,8 +70,15 @@ void ofApp::videoSetup() {
 	frameBuffer.clear();
 }
 
+float ofApp::iterateRow(envelopeData parameter) {
+	int rowIndex = parameter.returnRowIndex();
+	int envelopeIndex = parameter.returnEnvelopeIndex();
+	return parameter.lerp(envelopes[rowIndex][envelopeIndex], envelopes[rowIndex][envelopeIndex + 1]);
+}
+
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
+		/*
 		for (int b = 0; b < 4; b++) {
 			for (int c = 0; c < 3; c++) {
 				currentRowIndicies[b] = envelopeFractal[b][c].returnRowIndex();
@@ -111,6 +108,15 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				}
 			}
 		}
+		*/
+		panPosition = iterateRow(panEnvelope);
+		pan[0] = panPosition;
+		pan[1] = (1.0 - panPosition);
+		for (int d = 0; d < channels; d++) {
+			phase[d] = fmod(phase[d], TWO_PI);
+			sample[d] = sin(phase[d]) * sqrt(pan[d]) * iterateRow(panDelta);
+			buffer[a * channels + d] = sample[d];
+		}
 	}
 }
 
@@ -138,59 +144,4 @@ void ofApp::refresh() {
 	frameBuffer.allocate(width, height);
 	ofClear(0, 0, 0, 255);
 	window.set(width, height);
-}
-
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo) {
-
 }
