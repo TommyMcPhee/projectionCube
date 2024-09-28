@@ -40,9 +40,9 @@ void ofApp::setup() {
 	envelopes[5] = { 1.0, twoThirds, oneThird, 0.0, 1.0 };
 	envelopes[6] = { 1.0, 0.5, 0.0, 0.5, 1.0 };
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
-	for (int a = 0; a < 10; a++) {
-		for (int b = 0; b < 4; b++) {
-			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomf(), frequencyLimit);
+	for (int a = 0; a < 4; a++) {
+		for (int b = 0; b < 10; b++) {
+			envelopeFractal[a][b] = envelopeData(rand() % 8, abs(ofRandomf()), frequencyLimit);
 		}
 	}
 	audioSetup();
@@ -68,28 +68,20 @@ void ofApp::videoSetup() {
 	frameBuffer.clear();
 }
 
-float ofApp::iterateRow(envelopeData parameter) {
-	int rowIndex = parameter.returnRowIndex();
-	int envelopeIndex = parameter.returnEnvelopeIndex();
-	return parameter.lerp(envelopes[rowIndex][envelopeIndex], envelopes[rowIndex][envelopeIndex + 1]);
-}
-
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		for (int b = 0; b < 4; b++) {
-			for (int c = 0; c < 3; c++) {
+			//set c equal to array[b]
+			for (int c = 0; c < 10; c++) {
 				currentRowIndicies[b] = envelopeFractal[b][c].returnRowIndex();
 				currentEnvelopeIndicies[b] = envelopeFractal[b][c].returnEnvelopeIndex();
 				lastValues[b] = currentValues[b];
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b]], envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b] + 1]);
-				switch (c) {
-				case 2:
-					envelopeFractal[b][c - 1].setIncrement(frequencyLimit * currentValues[b] * lastValues[b]);
-					break;
-				case 1:
-					envelopeFractal[b][c - 1].setIncrement(frequencyLimit * currentValues[b]);
-					break;
-				case 0:
+				if (b > 0) {
+					//if(b = ){}
+					envelopeFractal[b][c - 1].setIncrement(currentValues[b] * lastValues[b] * frequencyLimit);
+				}
+				else {
 					pan[0] = currentValues[3];
 					pan[1] = (1.0 - pan[0]);
 					float phaseIncrement = currentValues[0] * frequencyLimit;
@@ -101,17 +93,8 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 						sample[d] = sin(phase[d]) * sqrt(pan[d]) * currentValues[2];
 						buffer[a * channels + d] = sample[d];
 					}
-					break;
 				}
 			}
-		}
-		panPosition = iterateRow(panEnvelope);
-		pan[0] = panPosition;
-		pan[1] = (1.0 - panPosition);
-		for (int d = 0; d < channels; d++) {
-			phase[d] = fmod(phase[d], TWO_PI);
-			sample[d] = sin(phase[d]) * sqrt(pan[d]) * iterateRow(panDelta);
-			buffer[a * channels + d] = sample[d];
 		}
 	}
 }
