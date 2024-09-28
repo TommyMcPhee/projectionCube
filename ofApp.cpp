@@ -8,24 +8,37 @@ int ofApp::fillRow() {
 	return element;
 }
 
+void ofApp::printRows() {
+	for (int b = 0; b < 4; b++) {
+		for (int c = 0; c < 8; c++) {
+			cout << rows[b][c];
+		}
+		cout << endl;
+	}
+}
+
 void ofApp::setup() {
-	bool symmetryA = false;
-	bool symmetryB = false;
-	while (!symmetryA && !symmetryB) {
+	bool symmetry = false;
+	while (!symmetry) {
 		for (int a = 0; a < 8; a++) {
 			temporaryIndicies.push_back(a);
 		}
 		for (int a = 0; a < 8; a++) {
-			rows[0][a] = fillRow();
+			int newElement = fillRow();
+			rows[0][a] = newElement;
+			rows[1][a] = (8 - newElement) % 8;
+			rows[2][a] = newElement * 3 % 8;
+			rows[3][a] = newElement * 5 % 8;
 		}
 		for (int a = 0; a < 8; a++) {
-			if (rows[0][7 - a] != 7 - rows[0][a]) {
+			if (rows[0][(8 - a) % 8] != rows[1][a] || rows[2][(8 - a) % 8] != rows[3][a]) {
 				temporaryIndicies.clear();
 				break;
 			}
 			else {
 				if (a == 3) {
-					symmetryA = true;
+					printRows();
+					symmetry = true;
 				}
 			}
 		}
@@ -34,21 +47,6 @@ void ofApp::setup() {
 			rows[1][a] = rows[0][7 - a];
 			rows[2][a] = rows[0][a] * 3 % 8;
 			rows[3][a] = rows[0][a] * 5 % 8;
-			if (rows[2][7 - a] != rows[3][a]){
-				break;
-				cout << "broke" << endl;
-				}
-			else {
-				if (a == 7) {
-
-					cout << rows[0][a];
-					cout << rows[1][a];
-					cout << rows[2][a];
-					cout << rows[3][a] << endl;
-
-					symmetryB = true;
-				}
-			}
 		}
 	}
 	for (int a = 0; a < 6; a++) {
@@ -56,12 +54,12 @@ void ofApp::setup() {
 			temporaryIndicies.push_back(b);
 		}
 		for (int b = 0; b < 4; b++) {
-			rowGroups[a][b] = fillRow();
+			rowGroups[a][b].rowForm = fillRow();
 		}
 		for (int b = 0; b < a; b++) {
 			for (int c = 0; c < 4; c++) {
 				int equivelence = 0;
-				if (rowGroups[b][c] == rowGroups[a][c]) {
+				if (rowGroups[b][c].rowForm == rowGroups[a][c].rowForm) {
 					equivelence++;
 				}
 				if (equivelence > 2) {
