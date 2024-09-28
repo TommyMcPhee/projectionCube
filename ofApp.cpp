@@ -1,21 +1,25 @@
 #include "ofApp.h"
 
-//--------------------------------------------------------------
+int ofApp::fillRow() {
+	int randomIndex = rand() % temporaryIndicies.size();
+	int element = temporaryIndicies[randomIndex];
+	auto erasePosition = temporaryIndicies.begin() + randomIndex;
+	temporaryIndicies.erase(erasePosition);
+	return element;
+}
+
 void ofApp::setup() {
-	vector<int> indicies;
 	bool symmetry = false;
 	while (!symmetry) {
 		for (int a = 0; a < 8; a++) {
-			indicies.push_back(a);
+			temporaryIndicies.push_back(a);
 		}
 		for (int a = 0; a < 8; a++) {
-			int randomIndex = rand() % indicies.size();
-			rows[0][a] = indicies[randomIndex];
-			auto erasePosition = indicies.begin() + randomIndex;
-			indicies.erase(erasePosition);
+			rows[0][a] = fillRow();
 		}
-		for (int a = 0; a < 4; a++) {
+		for (int a = 0; a < 8; a++) {
 			if (rows[0][7 - a] != 7 - rows[0][a]) {
+				temporaryIndicies.clear();
 				break;
 			}
 			else {
@@ -24,10 +28,39 @@ void ofApp::setup() {
 				}
 			}
 		}
-		for (int a = 0; a < 8; a++) {
+	}
+	temporaryIndicies.clear();
+	for (int a = 0; a < 8; a++) {
 			rows[1][a] = rows[0][7 - a];
 			rows[2][a] = rows[0][a] * 3 % 8;
 			rows[3][a] = rows[0][a] * 5 % 8;
+			/*
+			cout << rows[0][a];
+			cout << rows[1][a];
+			cout << rows[2][a];
+			cout << rows[3][a] << endl;
+			*/
+	}
+	for (int a = 0; a < 6; a++) {
+		for (int b = 0; b < 4; b++) {
+			temporaryIndicies.push_back(b);
+		}
+		for (int b = 0; b < 4; b++) {
+			rowGroups[a][b] = fillRow();
+		}
+		for (int b = 0; b < a; b++) {
+			for (int c = 0; c < 4; c++) {
+				int equivelence = 0;
+				if (rowGroups[b][c] == rowGroups[a][c]) {
+					equivelence++;
+				}
+				if (equivelence > 2) {
+					temporaryIndicies.clear();
+					equivelence = 0;
+					a--;
+					b = a;
+				}
+			}
 		}
 	}
 	static const float oneThird = 1.0 / 3.0;
@@ -77,7 +110,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				currentEnvelopeIndicies[b] = envelopeFractal[b][c].returnEnvelopeIndex();
 				lastValues[b] = currentValues[b];
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b]], envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b] + 1]);
-				if (b > 0) {
+				if (c > 0) {
 					//if(b = ){}
 					envelopeFractal[b][c - 1].setIncrement(currentValues[b] * lastValues[b] * frequencyLimit);
 				}
@@ -98,7 +131,6 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 		}
 	}
 }
-
 
 void ofApp::setUniforms() {
 

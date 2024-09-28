@@ -3,11 +3,12 @@
 #include "ofMain.h"
 #include <cmath>
 #include "envelopeData.h"
-#include "rowData.h"
 
 class ofApp : public ofBaseApp {
 
 public:
+	vector<int> temporaryIndicies;
+	int fillRow();
 	void setup();
 	ofSoundStreamSettings streamSettings;
 	static const int sampleRate = 48000;
@@ -35,7 +36,7 @@ public:
 	void draw();
 	array<array<int, 8>, 4> rows;
 	array<array<float, 5>, 8> envelopes;
-	array<rowData, 6> rowFractal;
+	array<array<int, 4>, 6> rowGroups;
 	array<array<envelopeData, 10>, 4> envelopeFractal;
 	array<int, 3> indicies;
 	array<float, 2> phase;
