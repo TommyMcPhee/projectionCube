@@ -9,8 +9,9 @@ int ofApp::fillRow() {
 }
 
 void ofApp::setup() {
-	bool symmetry = false;
-	while (!symmetry) {
+	bool symmetryA = false;
+	bool symmetryB = false;
+	while (!symmetryA && !symmetryB) {
 		for (int a = 0; a < 8; a++) {
 			temporaryIndicies.push_back(a);
 		}
@@ -24,22 +25,31 @@ void ofApp::setup() {
 			}
 			else {
 				if (a == 3) {
-					symmetry = true;
+					symmetryA = true;
 				}
 			}
 		}
-	}
-	temporaryIndicies.clear();
-	for (int a = 0; a < 8; a++) {
+		temporaryIndicies.clear();
+		for (int a = 0; a < 8; a++) {
 			rows[1][a] = rows[0][7 - a];
 			rows[2][a] = rows[0][a] * 3 % 8;
 			rows[3][a] = rows[0][a] * 5 % 8;
-			/*
-			cout << rows[0][a];
-			cout << rows[1][a];
-			cout << rows[2][a];
-			cout << rows[3][a] << endl;
-			*/
+			if (rows[2][7 - a] != rows[3][a]){
+				break;
+				cout << "broke" << endl;
+				}
+			else {
+				if (a == 7) {
+
+					cout << rows[0][a];
+					cout << rows[1][a];
+					cout << rows[2][a];
+					cout << rows[3][a] << endl;
+
+					symmetryB = true;
+				}
+			}
+		}
 	}
 	for (int a = 0; a < 6; a++) {
 		for (int b = 0; b < 4; b++) {
