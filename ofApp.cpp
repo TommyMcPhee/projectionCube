@@ -109,8 +109,31 @@ void ofApp::videoSetup() {
 	frameBuffer.clear();
 }
 
+void ofApp::incrementRows() {
+	for (int b = 0; b < 6; b++) {
+		for (int c = 0; c < 4; c++) {
+			float currentRowPhase = rowGroups[b][c].rowPhase;
+			rowGroups[b][c].rowPhase += rowIncrement;
+			if (currentRowPhase >= 1.0) {
+				switch (c) {
+				case 0:
+					break;
+				case 1:
+					break;
+				case 2:
+					break;
+				case 3:
+					break;
+				}
+				rowGroups[b][c].rowPhase = fmod(currentRowPhase, 1.0);
+			}
+		}
+	}
+}
+
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
+		incrementRows();
 		for (int b = 0; b < 4; b++) {
 			//set c equal to array[b]
 			for (int c = 0; c < 10; c++) {

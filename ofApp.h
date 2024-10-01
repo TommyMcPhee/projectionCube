@@ -26,6 +26,8 @@ public:
 	array<float, 4> currentValues;
 	array<float, 2> pan;
 	array<float, 2> sample;
+	float rowIncrement = 0.0000001;
+	void incrementRows();
 	void audioOut(ofSoundBuffer& buffer);
 	float width;
 	float height;
@@ -37,10 +39,10 @@ public:
 	void draw();
 	array<array<int, 8>, 4> rows;
 	array<array<float, 5>, 8> envelopes;
+	array<array<int, 2>, 4> rowLengths;
 	struct rowData {
 		int rowForm;
 		int rowElement;
-		float rowPhase;
 	};
 	array<array<rowData, 4>, 6> rowGroups;
 	array<array<envelopeData, 10>, 4> envelopeFractal;
