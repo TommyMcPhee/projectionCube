@@ -49,27 +49,17 @@ void ofApp::setup() {
 			rows[3][a] = rows[0][a] * 5 % 8;
 		}
 	}
-	for (int a = 0; a < 6; a++) {
-		for (int b = 0; b < 4; b++) {
-			temporaryIndicies.push_back(b);
-		}
-		for (int b = 0; b < 4; b++) {
-			rowGroups[a][b].rowForm = fillRow();
-		}
-		for (int b = 0; b < a; b++) {
-			for (int c = 0; c < 4; c++) {
-				int equivelence = 0;
-				if (rowGroups[b][c].rowForm == rowGroups[a][c].rowForm) {
-					equivelence++;
-				}
-				if (equivelence > 2) {
-					temporaryIndicies.clear();
-					equivelence = 0;
-					a--;
-					b = a;
-				}
-			}
-		}
+	for (int a = 0; a < 4; a++) {
+		temporaryIndicies.push_back(a);
+	}
+	for (int a = 0; a < 4; a++) {
+		int newElement = fillRow();
+		rowGroups[0][a].rowForm = newElement;
+		rowGroups[1][a].rowForm = 3 - newElement;
+	}
+	for (int a = 1; a < 10; a++) {
+		frequencyLimit += 6.0 * (float)a;
+		frequencyLimits[a - 1] = frequencyLimit;
 	}
 	static const float oneThird = 1.0 / 3.0;
 	static const float twoThirds = 2.0 / 3.0;
@@ -109,46 +99,24 @@ void ofApp::videoSetup() {
 	frameBuffer.clear();
 }
 
-void ofApp::incrementRows() {
-	for (int b = 0; b < 6; b++) {
-		for (int c = 0; c < 4; c++) {
-			float currentRowPhase = rowGroups[b][c].rowPhase;
-			rowGroups[b][c].rowPhase += rowIncrement;
-			if (currentRowPhase >= 1.0) {
-				switch (c) {
-				case 0:
-					break;
-				case 1:
-					break;
-				case 2:
-					break;
-				case 3:
-					break;
-				}
-				rowGroups[b][c].rowPhase = fmod(currentRowPhase, 1.0);
-			}
-		}
-	}
-}
-
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
-		incrementRows();
 		for (int b = 0; b < 4; b++) {
-			//set c equal to array[b]
-			for (int c = 0; c < 10; c++) {
+			for (int c = 0; c < fractalLayers[b]; c++) {
 				currentRowIndicies[b] = envelopeFractal[b][c].returnRowIndex();
 				currentEnvelopeIndicies[b] = envelopeFractal[b][c].returnEnvelopeIndex();
 				lastValues[b] = currentValues[b];
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b]], envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b] + 1]);
 				if (c > 0) {
-					//if(b = ){}
-					envelopeFractal[b][c - 1].setIncrement(currentValues[b] * lastValues[b] * frequencyLimit);
+					if(c = fractalLayers[b]) {
+					
+					}
+					envelopeFractal[b][c - 1].setIncrement(currentValues[b] * lastValues[b] * frameSamples / frequencyLimits[c]);
 				}
 				else {
 					pan[0] = currentValues[3];
 					pan[1] = (1.0 - pan[0]);
-					float phaseIncrement = currentValues[0] * frequencyLimit;
+					float phaseIncrement = currentValues[0] * frameSamples / 6.0;
 					float detune = (2.0 * currentValues[1] - 1.0) * currentValues[0];
 					phase[0] += currentValues[0] + detune;
 					phase[1] += currentValues[0] - detune;
@@ -180,7 +148,7 @@ void ofApp::draw() {
 }
 
 void ofApp::refresh() {
-	frequencyLimit = 6.0 * (float)(ofGetFrameRate() / sampleRate);
+	frameSamples = (float)(ofGetFrameRate() / sampleRate);
 	width = (float)ofGetWidth();
 	height = (float)ofGetHeight();
 	frameBuffer.allocate(width, height);

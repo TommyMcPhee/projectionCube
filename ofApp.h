@@ -20,14 +20,14 @@ public:
 	void audioSetup();
 	void videoSetup();
 	float frequencyLimit;
+	array<float, 9> frequencyLimits;
+	float frameSamples;
 	array<int, 4> currentRowIndicies;
 	array<int, 4> currentEnvelopeIndicies;
 	array<float, 4> lastValues;
 	array<float, 4> currentValues;
 	array<float, 2> pan;
 	array<float, 2> sample;
-	float rowIncrement = 0.0000001;
-	void incrementRows();
 	void audioOut(ofSoundBuffer& buffer);
 	float width;
 	float height;
@@ -43,8 +43,11 @@ public:
 	struct rowData {
 		int rowForm;
 		int rowElement;
+		float rowPhase = 1.1;
+		float totalPhase;
 	};
-	array<array<rowData, 4>, 6> rowGroups;
+	array<array<rowData, 4>, 2> rowGroups;
+	array<int, 4> fractalLayers;
 	array<array<envelopeData, 10>, 4> envelopeFractal;
 	array<int, 3> indicies;
 	array<float, 2> phase;
