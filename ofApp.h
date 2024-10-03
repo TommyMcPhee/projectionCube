@@ -19,9 +19,10 @@ public:
 	void ofSoundStreamSetup(ofSoundStreamSettings& settings);
 	void audioSetup();
 	void videoSetup();
-	float frequencyLimit;
-	array<float, 9> frequencyLimits;
-	float frameSamples;
+	float frameLimit;
+	array<float, 9> frameLimits;
+	float frameSample;
+	float increment;
 	array<int, 4> currentRowIndicies;
 	array<int, 4> currentEnvelopeIndicies;
 	array<float, 4> lastValues;
@@ -41,12 +42,13 @@ public:
 	array<array<float, 5>, 8> envelopes;
 	array<array<int, 2>, 4> rowLengths;
 	struct rowData {
-		int rowForm;
-		int rowElement;
-		float rowPhase = 1.1;
-		float totalPhase;
+		array<int, 4> rowForms;
+		array<int, 4> rowElements;
+		array<int, 2> rowIndicies;
+		array<int, 2> rowCounters;
+		array<float, 2> rowPhases;
 	};
-	array<array<rowData, 4>, 2> rowGroups;
+	array<rowData, 3> rowGroups;
 	array<int, 4> fractalLayers;
 	array<array<envelopeData, 10>, 4> envelopeFractal;
 	array<int, 3> indicies;
