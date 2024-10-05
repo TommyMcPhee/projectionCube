@@ -9,6 +9,7 @@ class ofApp : public ofBaseApp {
 public:
 	vector<int> temporaryIndicies;
 	int fillRow();
+	void resetTemporaryIndicies(int rowSize);
 	void printRows();
 	void setup();
 	ofSoundStreamSettings streamSettings;
@@ -40,16 +41,17 @@ public:
 	void draw();
 	array<array<int, 8>, 4> rows;
 	array<array<float, 5>, 8> envelopes;
-	array<array<int, 2>, 4> rowLengths;
+	array<array<float, 2>, 2> totalPhases;
+	array<array<float, 2>, 2> rowPhases;
 	struct rowData {
 		array<int, 4> rowForms;
 		array<int, 4> rowElements;
 		array<int, 2> rowIndicies;
 		array<int, 2> rowCounters;
-		array<float, 2> rowPhases;
 	};
+	int incrementIndex(rowData rowGroup, int index);
 	array<rowData, 3> rowGroups;
-	array<int, 4> fractalLayers;
+	array<int, 4> fractalLayers = { 2, 2, 2, 2 };
 	array<array<envelopeData, 10>, 4> envelopeFractal;
 	array<int, 3> indicies;
 	array<float, 2> phase;

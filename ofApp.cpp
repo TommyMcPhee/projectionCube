@@ -1,5 +1,12 @@
 #include "ofApp.h"
 
+void ofApp::resetTemporaryIndicies(int rowSize) {
+	temporaryIndicies.clear();
+	for (int z = 0; z < rowSize; z++) {
+		temporaryIndicies.push_back(z);
+	}
+}
+
 int ofApp::fillRow() {
 	int randomIndex = rand() % temporaryIndicies.size();
 	int element = temporaryIndicies[randomIndex];
@@ -20,9 +27,7 @@ void ofApp::printRows() {
 void ofApp::setup() {
 	bool symmetry = false;
 	while (!symmetry) {
-		for (int a = 0; a < 8; a++) {
-			temporaryIndicies.push_back(a);
-		}
+		resetTemporaryIndicies(8);
 		for (int a = 0; a < 8; a++) {
 			int newElement = fillRow();
 			rows[0][a] = newElement;
@@ -32,7 +37,6 @@ void ofApp::setup() {
 		}
 		for (int a = 0; a < 8; a++) {
 			if (rows[0][(8 - a) % 8] != rows[1][a] || rows[2][(8 - a) % 8] != rows[3][a]) {
-				temporaryIndicies.clear();
 				break;
 			}
 			else {
@@ -42,38 +46,34 @@ void ofApp::setup() {
 				}
 			}
 		}
-		temporaryIndicies.clear();
 		for (int a = 0; a < 8; a++) {
 			rows[1][a] = rows[0][7 - a];
 			rows[2][a] = rows[0][a] * 3 % 8;
 			rows[3][a] = rows[0][a] * 5 % 8;
 		}
 	}
-	for (int a = 0; a < 4; a++) {
-		temporaryIndicies.push_back(a);
-	}
 	for (int a = 0; a < 3; a++) {
-		for (int b = 0; b < 3; b++) {
+		resetTemporaryIndicies(4);
+		for (int b = 0; b < 4; b++) {
 			int newElement = fillRow();
-			rowGroups[a][b].rowForm = newElement;
+			rowGroups[a].rowForms[b] = newElement;
 		}
 		for(int b = 0; b < a; b++){
 			int identical = 0;
 			for (int c = 0; c < 3; c++) {
-				if (rowGroups[a][c].rowForm == rowGroups[b][c].rowForm) {
+				if (rowGroups[a].rowForms[c] == rowGroups[b].rowForms[c]) {
 					identical++;
-					if (identical > 3) {
+					if (identical > 2) {
 						a--;
 					}
 				}
 			}
 		}
-		rowGroups[a][3].rowForm = 3;
+		rowGroups[a].rowForms[3] = 3;
 		int rotation = rand() % 4;
 		for (int b = 0; b < 4; b++) {
-			rowGroups[a][b].rowForm += rotation;
-			rowGroups[a][b].rowForm %= 4;
-			rowGroups[a][b].rowPhase = fmod(ofRandomuf(), 8.0);
+			rowGroups[a].rowForms[b] += rotation;
+			rowGroups[a].rowForms[b] %= 4;
 		}
 	}
 	for (int a = 1; a < 10; a++) {
@@ -95,8 +95,15 @@ void ofApp::setup() {
 			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomuf(), frameSample * frameLimits[a]);
 		}
 	}
+	for (int a = 0; a < 2; a++) {
+		for (int b = 0; b < 2; b++) {
+			totalPhases[a][b] = 0.0;
+			rowPhases[a][b] = ofRandomuf();
+		}
+	}
 	audioSetup();
 	videoSetup();
+	
 }
 
 void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
@@ -118,6 +125,13 @@ void ofApp::videoSetup() {
 	frameBuffer.clear();
 }
 
+int ofApp::incrementIndex(rowData rowGroup, int index) {
+	rowGroup.rowIndicies[index]++;
+	rowGroup.rowIndicies[index] %= 8;
+	rowGroup.rowElements[index] = rows[rowGroup.rowForms[index]][rowGroup.rowIndicies[index]];
+	return rowGroup.rowElements[index];
+}
+
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		for (int b = 0; b < 4; b++) {
@@ -130,17 +144,19 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 					increment = frameSample / frameLimits[c];
 					if (c == fractalLayers[b]) {
 						for (int d = 0; d < 2; d++) {
-							rowGroups[b % 2].rowPhases[d] += increment;
-							if (rowGroups[b % 2].rowPhases[d] > 1.0) {
+							totalPhases[b % 2][d] += increment;
+							rowPhases[b % 2][d] += increment;
+							if (rowPhases[b % 2][d] > 1.0) {
 								rowGroups[b % 2].rowCounters[d]--;
 								if (rowGroups[b % 2].rowCounters[d] < 1) {
-									rowGroups[b % 2].rowIndicies[d]++;
-									rowGroups[b % 2].rowCounters[d] = rowGroups[b % 2].rowElements[d + 2];
+									rowGroups[b % 2].rowCounters[d] = incrementIndex(rowGroups[b % 2], d);
+									//modify!!
 									if (rowGroups[b % 2].rowIndicies[d] > 7) {
-										fractalLayers[b] = rowGroups[3].rowElements[b];
+										fractalLayers[b] = incrementIndex(rowGroups[2], b) + 2;
+										//end!!
 									}
 								}
-								rowGroups[b % 2].rowPhases[d] = fmod(rowGroups[b % 2].rowPhases[d], 1.0);
+								rowPhases[b % 2][d] = fmod(rowPhases[b % 2][d], 1.0);
 							}
 						}
 					}
