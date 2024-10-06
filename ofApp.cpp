@@ -103,7 +103,6 @@ void ofApp::setup() {
 	}
 	audioSetup();
 	videoSetup();
-	
 }
 
 void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
@@ -153,6 +152,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 									//modify!!
 									if (rowGroups[b % 2].rowIndicies[d] > 7) {
 										fractalLayers[b] = incrementIndex(rowGroups[2], b) + 2;
+										cout << fractalLayers[b] << endl;
 										//end!!
 									}
 								}
