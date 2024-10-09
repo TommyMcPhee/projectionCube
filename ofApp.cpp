@@ -96,10 +96,8 @@ void ofApp::setup() {
 		}
 	}
 	for (int a = 0; a < 2; a++) {
-		for (int b = 0; b < 2; b++) {
-			totalPhases[a][b] = 0.0;
-			rowPhases[a][b] = ofRandomuf();
-		}
+			totalPhases[a] = 0.0;
+			rowPhases[a] = 1.0 + ofRandomuf();
 	}
 	audioSetup();
 	videoSetup();
@@ -135,40 +133,47 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		for (int b = 0; b < 4; b++) {
 			for (int c = 0; c < fractalLayers[b]; c++) {
-				currentRowIndicies[b] = envelopeFractal[b][c].returnRowIndex();
-				currentEnvelopeIndicies[b] = envelopeFractal[b][c].returnEnvelopeIndex();
+				currentRowIndex = rows[form[b]][(envelopeFractal[b][c].returnRowIndex() + transposition[b]) % 7];
 				lastValues[b] = currentValues[b];
-				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b]], envelopes[currentRowIndicies[b]][currentEnvelopeIndicies[b] + 1]);
+				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 				if (c > 0) {
 					increment = frameSample / frameLimits[c];
-					if (c == fractalLayers[b]) {
-						for (int d = 0; d < 2; d++) {
-							totalPhases[b % 2][d] += increment;
-							rowPhases[b % 2][d] += increment;
-							if (rowPhases[b % 2][d] > 1.0) {
-								rowGroups[b % 2].rowCounters[d]--;
-								if (rowGroups[b % 2].rowCounters[d] < 1) {
-									rowGroups[b % 2].rowCounters[d] = incrementIndex(rowGroups[b % 2], d);
-									//modify!!
-									if (rowGroups[b % 2].rowIndicies[d] > 7) {
-										fractalLayers[b] = incrementIndex(rowGroups[2], b) + 2;
-										cout << fractalLayers[b] << endl;
-										//end!!
-									}
-								}
-								rowPhases[b % 2][d] = fmod(rowPhases[b % 2][d], 1.0);
+					if (c == fractalLayers[b] - 1) {
+						totalPhases[b % 2] += increment;
+						rowPhases[b % 2] += increment;
+						if (rowPhases[b % 2] > 1.0) {
+							parameterChange[b % 2] = incrementIndex(rowGroups[b % 2], 0);
+							if (parameterChange[b % 2] < 4) {
+								form[b % 2] = parameterChange[b % 2];
+								transposition[b % 2] = incrementIndex(rowGroups[b % 2], 1);
 							}
+							else {
+								form[(b % 2) + 2] = 7 - parameterChange[b % 2];
+								transposition[(b % 2) + 2] = incrementIndex(rowGroups[b % 2], 1);
+							}
+							rowGroups[b % 2].rowCounters[b % 2]--;
+							if (rowGroups[b % 2].rowCounters[b % 2] < 1) {
+								if (rowGroups[b % 2].rowIndicies[(b % 2) + 2] == 7) {
+									if (rowGroups[2].rowIndicies[b] == 7) {
+										cout << "end" << b << endl;
+										//ofSoundStreamClose();
+									}
+									fractalLayers[b] = incrementIndex(rowGroups[2], b) + 2;
+									cout << "new layer" << endl;
+								}
+								rowGroups[b % 2].rowCounters[b % 2] = incrementIndex(rowGroups[b % 2], (b % 2) + 2) + 1;
+							}
+							rowPhases[b % 2] = fmod(rowPhases[b % 2], 1.0);
 						}
 					}
 					envelopeFractal[b][c - 1].setIncrement(currentValues[b] * lastValues[b] * increment);
 				}
 				else {
-					pan[0] = currentValues[1];
+					pan[0] = currentValues[3];
 					pan[1] = (1.0 - pan[0]);
-					float phaseIncrement = currentValues[3] * frameSample / 6.0;
-					float detune = (2.0 * currentValues[2] - 1.0) * currentValues[0];
-					phase[0] += currentValues[0] + detune;
-					phase[1] += currentValues[0] - detune;
+					float detune = (2.0 * currentValues[2] - 1.0) * currentValues[1];
+					phase[0] += currentValues[1] + detune;
+					phase[1] += currentValues[1] - detune;
 					for (int d = 0; d < channels; d++) {
 						phase[d] = fmod(phase[d], TWO_PI);
 						sample[d] = sin(phase[d]) * sqrt(pan[d]) * currentValues[0];

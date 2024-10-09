@@ -23,9 +23,11 @@ public:
 	float frameLimit;
 	array<float, 9> frameLimits;
 	float frameSample;
+	int currentRowIndex, currentEnvelopeIndex;
 	float increment;
-	array<int, 4> currentRowIndicies;
-	array<int, 4> currentEnvelopeIndicies;
+	array<int, 4> parameterChange;
+	array<int, 4> form;
+	array<int, 4> transposition;
 	array<float, 4> lastValues;
 	array<float, 4> currentValues;
 	array<float, 2> pan;
@@ -41,12 +43,12 @@ public:
 	void draw();
 	array<array<int, 8>, 4> rows;
 	array<array<float, 5>, 8> envelopes;
-	array<array<float, 2>, 2> totalPhases;
-	array<array<float, 2>, 2> rowPhases;
+	array<float, 2> totalPhases;
+	array<float, 2> rowPhases;
 	struct rowData {
 		array<int, 4> rowForms;
 		array<int, 4> rowElements;
-		array<int, 2> rowIndicies;
+		array<int, 4> rowIndicies;
 		array<int, 2> rowCounters;
 	};
 	int incrementIndex(rowData rowGroup, int index);
