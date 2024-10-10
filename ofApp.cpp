@@ -123,9 +123,13 @@ void ofApp::videoSetup() {
 }
 
 int ofApp::incrementIndex(rowData rowGroup, int index) {
-	rowGroup.rowIndicies[index]++;
-	rowGroup.rowIndicies[index] %= 8;
+	int currentIndex = rowGroup.rowIndicies[index];
+	currentIndex++;
+	currentIndex %= 8;
+	rowGroup.rowIndicies[index] = currentIndex;
+	//rowGroup.rowIndicies[index] %= 8;
 	rowGroup.rowElements[index] = rows[rowGroup.rowForms[index]][rowGroup.rowIndicies[index]];
+	cout << rowGroup.rowIndicies[index] << endl;
 	return rowGroup.rowElements[index];
 }
 
@@ -134,6 +138,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 		for (int b = 0; b < 4; b++) {
 			for (int c = 0; c < fractalLayers[b]; c++) {
 				currentRowIndex = rows[form[b]][(envelopeFractal[b][c].returnRowIndex() + transposition[b]) % 7];
+				//currentEnvelopeIndex = envelopeFractal[b][c].returnEnvelopeIndex();
 				lastValues[b] = currentValues[b];
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 				if (c > 0) {
@@ -166,7 +171,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 							rowPhases[b % 2] = fmod(rowPhases[b % 2], 1.0);
 						}
 					}
-					envelopeFractal[b][c - 1].setIncrement(currentValues[b] * lastValues[b] * increment);
+					envelopeFractal[b][c - 1].setIncrement(increment);
 				}
 				else {
 					pan[0] = currentValues[3];

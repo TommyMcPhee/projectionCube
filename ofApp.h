@@ -57,4 +57,6 @@ public:
 	array<array<envelopeData, 10>, 4> envelopeFractal;
 	array<int, 3> indicies;
 	array<float, 2> phase;
+
+	int temp = 0;
 };

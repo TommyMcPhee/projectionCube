@@ -20,7 +20,7 @@ float envelopeData::iterate() {
 	if (position >= 4.0) {
 		rowIndex++;
 		rowIndex %= 7;
-		position -= 4.0;
+		position = fmod(position, 4.0);
 	}
 	return fmod(position, 1.0);
 }
