@@ -48,15 +48,19 @@ public:
 	struct rowData {
 		array<int, 4> rowForms;
 		array<int, 4> rowElements;
-		array<int, 4> rowIndicies;
+		array<int, 4> rowIndicies = { 0, 0, 0, 0 };
 		array<int, 2> rowCounters;
 	};
-	int incrementIndex(rowData rowGroup, int index);
+	int incrementIndex(int group, int index);
 	array<rowData, 3> rowGroups;
 	array<int, 4> fractalLayers = { 2, 2, 2, 2 };
 	array<array<envelopeData, 10>, 4> envelopeFractal;
 	array<int, 3> indicies;
 	array<float, 2> phase;
-
-	int temp = 0;
+	struct test {
+		array<int, 2> temp = { 0, 0 };
+		float tempFloat;
+	};
+	array<test, 2> testy;
+	void tester(test t);
 };
