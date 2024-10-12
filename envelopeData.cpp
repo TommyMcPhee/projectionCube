@@ -16,11 +16,11 @@ void envelopeData::setIncrement(float _increment) {
 
 float envelopeData::iterate() {
 	position += increment;
-	envelopeIndex = trunc(position);
-	if (position >= 4.0) {
+	envelopeIndex = (int)trunc(position) % 4;
+	if (position >= 5.0) {
 		rowIndex++;
 		rowIndex %= 7;
-		position = fmod(position, 4.0);
+		position = fmod(position, 5.0);
 	}
 	return fmod(position, 1.0);
 }

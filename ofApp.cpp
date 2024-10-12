@@ -135,10 +135,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 		for (int b = 0; b < 4; b++) {
 			for (int c = 0; c < fractalLayers[b]; c++) {
 				currentRowIndex = rows[form[b]][(envelopeFractal[b][c].returnRowIndex() + transposition[b]) % 7];
-				//THIS NEEDS TO BE FIXED
-				cout << envelopeFractal[b][c].returnEnvelopeIndex() << endl;
-				currentEnvelopeIndex = envelopeFractal[b][c].returnEnvelopeIndex() % 4;
-				//
+				currentEnvelopeIndex = envelopeFractal[b][c].returnEnvelopeIndex();
 				lastValues[b] = currentValues[b];
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 				if (c > 0) {
@@ -176,12 +173,13 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				else {
 					pan[0] = currentValues[3];
 					pan[1] = (1.0 - pan[0]);
-					float detune = (2.0 * currentValues[2] - 1.0) * currentValues[1];
-					phase[0] += currentValues[1] + detune;
-					phase[1] += currentValues[1] - detune;
+					float phaseIncrement = abs(pow(currentValues[1], 5.0));
+					float detune = (2.0 * currentValues[2] - 1.0) * phaseIncrement;
+					phase[0] += phaseIncrement + detune;
+					phase[1] += phaseIncrement - detune;
 					for (int d = 0; d < channels; d++) {
 						phase[d] = fmod(phase[d], TWO_PI);
-						sample[d] = sin(phase[d]) * sqrt(pan[d]) * currentValues[0];
+						sample[d] = sin(phase[d]) * sqrt(pan[d]) * abs(pow(currentValues[0], 3.0));
 						buffer[a * channels + d] = sample[d];
 					}
 				}

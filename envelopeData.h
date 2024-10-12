@@ -17,7 +17,7 @@ public:
 	int rowIndex, envelopeIndex;
 private:
 	float iterate();
-	float position, increment;
+	float position = 0.0, increment;
 };
 
 #endif
