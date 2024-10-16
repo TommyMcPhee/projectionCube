@@ -20,11 +20,9 @@ public:
 	void ofSoundStreamSetup(ofSoundStreamSettings& settings);
 	void audioSetup();
 	void videoSetup();
-	float frameLimit;
-	array<float, 9> frameLimits;
-	float frameSample;
+	float frameSample, minimumIncrement, increment;
 	int currentRowIndex, currentEnvelopeIndex;
-	float increment;
+	bool end = false;
 	array<int, 4> parameterChange;
 	array<int, 4> form;
 	array<int, 4> transposition;

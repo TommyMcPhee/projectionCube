@@ -72,14 +72,9 @@ void ofApp::setup() {
 		rowGroups[a].rowForms[3] = 3;
 		int rotation = rand() % 4;
 		for (int b = 0; b < 4; b++) {
-			//rowGroups[a].rowIndicies[b] = rand() % 8;
 			rowGroups[a].rowForms[b] += rotation;
 			rowGroups[a].rowForms[b] %= 4;
 		}
-	}
-	for (int a = 1; a < 10; a++) {
-		frameLimit += 6.0 * (float)a;
-		frameLimits[a - 1] = frameLimit;
 	}
 	static const float oneThird = 1.0 / 3.0;
 	static const float twoThirds = 2.0 / 3.0;
@@ -93,7 +88,7 @@ void ofApp::setup() {
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
 	for (int a = 0; a < 4; a++) {
 		for (int b = 0; b < 10; b++) {
-			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomuf(), frameSample * frameLimits[a]);
+			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomuf(), frameSample);
 		}
 	}
 	for (int a = 0; a < 2; a++) {
@@ -133,39 +128,41 @@ int ofApp::incrementIndex(int group, int index) {
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		for (int b = 0; b < 4; b++) {
+			int alternate = b % 2;
 			for (int c = 0; c < fractalLayers[b]; c++) {
 				currentRowIndex = rows[form[b]][(envelopeFractal[b][c].returnRowIndex() + transposition[b]) % 7];
 				currentEnvelopeIndex = envelopeFractal[b][c].returnEnvelopeIndex();
 				lastValues[b] = currentValues[b];
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 				if (c > 0) {
-					increment = pow(1.0 - lastValues[b], 1.0 - lastValues[b]) * frameSample / frameLimits[c];
+					increment = (1.0 - minimumIncrement) * pow(lastValues[b], pow(c, 2)) * pow(frameSample, 1 / c) + minimumIncrement;
 					if (c == fractalLayers[b] - 1) {
-						totalPhases[b % 2] += increment;
-						rowPhases[b % 2] += increment;
-						if (rowPhases[b % 2] > 1.0) {
-							parameterChange[b % 2] = incrementIndex(b % 2, 0);
-							if (parameterChange[b % 2] < 4) {
-								form[b % 2] = parameterChange[b % 2];
-								transposition[b % 2] = incrementIndex(b % 2, 1);
+						totalPhases[alternate] += increment;
+						rowPhases[alternate] += increment;
+						if (rowPhases[alternate] > 1.0) {
+							parameterChange[alternate] = incrementIndex(alternate, 0);
+							if (parameterChange[alternate] < 4) {
+								form[alternate] = parameterChange[alternate];
+								transposition[alternate] = incrementIndex(alternate, 1);
 							}
 							else {
-								form[(b % 2) + 2] = 7 - parameterChange[b % 2];
-								transposition[(b % 2) + 2] = incrementIndex(b % 2, 1);
+								form[alternate + 2] = 7 - parameterChange[alternate];
+								transposition[alternate + 2] = incrementIndex(alternate, 1);
 							}
-							rowGroups[b % 2].rowCounters[b % 2]--;
-							if (rowGroups[b % 2].rowCounters[b % 2] < 1) {
-								if (rowGroups[b % 2].rowIndicies[(b % 2) + 2] == 7) {
+							rowGroups[alternate].rowCounters[alternate]--;
+							if (rowGroups[alternate].rowCounters[alternate] < 1) {
+								if (rowGroups[alternate].rowIndicies[alternate + 2] == 7) {
 									if (rowGroups[2].rowIndicies[b] == 7) {
 										cout << "end" << b << endl;
+										end = true;
 										ofSoundStreamClose();
 									}
 									fractalLayers[b] = incrementIndex(2, b) + 2;
 									cout << "new layer" << endl;
 								}
-								rowGroups[b % 2].rowCounters[b % 2] = incrementIndex(b % 2, (b % 2) + 2) + 1;
+								rowGroups[alternate].rowCounters[alternate] = incrementIndex(alternate, alternate + 2) + 1;
 							}
-							rowPhases[b % 2] = fmod(rowPhases[b % 2], 1.0);
+							rowPhases[alternate] = fmod(rowPhases[alternate], 1.0);
 						}
 					}
 					envelopeFractal[b][c - 1].setIncrement(increment);
@@ -180,6 +177,9 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 					for (int d = 0; d < channels; d++) {
 						phase[d] = fmod(phase[d], TWO_PI);
 						sample[d] = sin(phase[d]) * sqrt(pan[d]) * abs(pow(currentValues[0], 3.0));
+						if (end) {
+							sample[d] = 0.0;
+						}
 						buffer[a * channels + d] = sample[d];
 					}
 				}
@@ -206,6 +206,7 @@ void ofApp::draw() {
 
 void ofApp::refresh() {
 	frameSample = (float)(ofGetFrameRate() / sampleRate);
+	minimumIncrement = pow(frameSample, 2.0);
 	width = (float)ofGetWidth();
 	height = (float)ofGetHeight();
 	frameBuffer.allocate(width, height);
