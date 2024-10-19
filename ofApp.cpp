@@ -94,6 +94,7 @@ void ofApp::setup() {
 	for (int a = 0; a < 2; a++) {
 		totalPhases[a] = 0.0;
 		rowPhases[a] = 1.0 + ofRandomuf();
+		parameterChange[a] = 0;
 	}
 	audioSetup();
 	videoSetup();
@@ -132,35 +133,51 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 			for (int c = 0; c < fractalLayers[b]; c++) {
 				currentRowIndex = rows[form[b]][(envelopeFractal[b][c].returnRowIndex() + transposition[b]) % 7];
 				currentEnvelopeIndex = envelopeFractal[b][c].returnEnvelopeIndex();
-				lastValues[b] = currentValues[b];
+				if (c < fractalLayers[b] - 1) {
+					lastValues[b] = currentValues[b];
+				}
+				else {
+					lastValues[b] = frameSample * fractalLayers[b];
+				}
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 				if (c > 0) {
-					increment = (1.0 - minimumIncrement) * pow(lastValues[b], pow(c, 2)) * pow(frameSample, 1 / c) + minimumIncrement;
+					increment = (1.0 - minimumIncrement) * pow(lastValues[b], pow((float)c, 0.5) + 1.0) + minimumIncrement;
 					if (c == fractalLayers[b] - 1) {
 						totalPhases[alternate] += increment;
 						rowPhases[alternate] += increment;
 						if (rowPhases[alternate] > 1.0) {
-							parameterChange[alternate] = incrementIndex(alternate, 0);
-							if (parameterChange[alternate] < 4) {
-								form[alternate] = parameterChange[alternate];
-								transposition[alternate] = incrementIndex(alternate, 1);
-							}
-							else {
-								form[alternate + 2] = 7 - parameterChange[alternate];
-								transposition[alternate + 2] = incrementIndex(alternate, 1);
-							}
-							rowGroups[alternate].rowCounters[alternate]--;
-							if (rowGroups[alternate].rowCounters[alternate] < 1) {
-								if (rowGroups[alternate].rowIndicies[alternate + 2] == 7) {
-									if (rowGroups[2].rowIndicies[b] == 7) {
-										cout << "end" << b << endl;
-										end = true;
-										ofSoundStreamClose();
+							for (int d = 0; d < 2; d++) {
+								rowCounters[alternate][d]--;
+								if (rowCounters[alternate][d] < 1) {
+									if (parameterChange[alternate] < 4) {
+										if (d == 0) {
+											form[alternate] = parameterChange[alternate];
+											parameterChange[alternate] = incrementIndex(alternate, 0);
+										}
+										else {
+											transposition[alternate] = incrementIndex(alternate, 1);
+										}
 									}
-									fractalLayers[b] = incrementIndex(2, b) + 2;
-									cout << "new layer" << endl;
+									else {
+										if (d == 0) {
+											form[alternate + 2] = 7 - parameterChange[alternate];
+											parameterChange[alternate] = incrementIndex(alternate, 0);
+										}
+										else {
+											transposition[alternate + 2] = incrementIndex(alternate, 1);
+										}
+									}
+									if (rowGroups[alternate].rowIndicies[alternate + 2] == 7) {
+										if (rowGroups[2].rowIndicies[b] == 7) {
+											cout << "end" << b << endl;
+											end = true;
+											ofSoundStreamClose();
+										}
+										fractalLayers[b] = incrementIndex(2, b) + 2;
+										cout << "new layer" << endl;
+									}
+									rowCounters[alternate][d] = incrementIndex(alternate, d + 2) + 1;
 								}
-								rowGroups[alternate].rowCounters[alternate] = incrementIndex(alternate, alternate + 2) + 1;
 							}
 							rowPhases[alternate] = fmod(rowPhases[alternate], 1.0);
 						}
@@ -170,13 +187,14 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				else {
 					pan[0] = currentValues[3];
 					pan[1] = (1.0 - pan[0]);
-					float phaseIncrement = abs(pow(currentValues[1], 5.0));
-					float detune = (2.0 * currentValues[2] - 1.0) * phaseIncrement;
-					phase[0] += phaseIncrement + detune;
-					phase[1] += phaseIncrement - detune;
+					float frequency = abs(pow(currentValues[1], 5.0));
+					float detune = (2.0 * currentValues[2] - 1.0) * frequency;
+					phaseIncrement[0] = frequency + detune;
+					phaseIncrement[1] = frequency - detune;
 					for (int d = 0; d < channels; d++) {
+						phase[d] += phaseIncrement[d];
 						phase[d] = fmod(phase[d], TWO_PI);
-						sample[d] = sin(phase[d]) * sqrt(pan[d]) * abs(pow(currentValues[0], 3.0));
+						sample[d] = sin(phase[d]) * sqrt(pan[d]) * abs(pow(currentValues[0] * pow(1.0 - phaseIncrement[d], 2.0), 3.0));
 						if (end) {
 							sample[d] = 0.0;
 						}

@@ -20,7 +20,7 @@ public:
 	void ofSoundStreamSetup(ofSoundStreamSettings& settings);
 	void audioSetup();
 	void videoSetup();
-	float frameSample, minimumIncrement, increment;
+	float frameSample, lastIncrement, minimumIncrement, increment;
 	int currentRowIndex, currentEnvelopeIndex;
 	bool end = false;
 	array<int, 4> parameterChange;
@@ -41,24 +41,18 @@ public:
 	void draw();
 	array<array<int, 8>, 4> rows;
 	array<array<float, 5>, 8> envelopes;
-	array<float, 2> totalPhases;
-	array<float, 2> rowPhases;
+	array<float, 2> totalPhases, rowPhases;
 	struct rowData {
 		array<int, 4> rowForms;
 		array<int, 4> rowElements;
 		array<int, 4> rowIndicies = { 0, 0, 0, 0 };
-		array<int, 2> rowCounters;
 	};
+	array<array<int, 2>, 2> rowCounters;
 	int incrementIndex(int group, int index);
 	array<rowData, 3> rowGroups;
 	array<int, 4> fractalLayers = { 2, 2, 2, 2 };
 	array<array<envelopeData, 10>, 4> envelopeFractal;
 	array<int, 3> indicies;
+	array<float, 2> phaseIncrement;
 	array<float, 2> phase;
-	struct test {
-		array<int, 2> temp = { 0, 0 };
-		float tempFloat;
-	};
-	array<test, 2> testy;
-	void tester(test t);
 };
