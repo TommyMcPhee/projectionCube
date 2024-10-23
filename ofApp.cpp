@@ -86,9 +86,10 @@ void ofApp::setup() {
 	envelopes[5] = { 1.0, twoThirds, oneThird, 0.0, 1.0 };
 	envelopes[6] = { 1.0, 0.5, 0.0, 0.5, 1.0 };
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
+	minimumIncrement = 0.0000152587890625;
 	for (int a = 0; a < 4; a++) {
 		for (int b = 0; b < 10; b++) {
-			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomuf(), frameSample);
+			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomuf(), minimumIncrement);
 		}
 	}
 	for (int a = 0; a < 2; a++) {
@@ -97,7 +98,6 @@ void ofApp::setup() {
 		parameterChange[a] = 0;
 	}
 	audioSetup();
-	videoSetup();
 }
 
 void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
@@ -113,12 +113,6 @@ void ofApp::audioSetup() {
 	stream.setup(streamSettings);
 }
 
-void ofApp::videoSetup() {
-	shader.load("serialShader");
-	frameBuffer.allocate(ofGetScreenWidth(), ofGetScreenHeight());
-	frameBuffer.clear();
-}
-
 int ofApp::incrementIndex(int group, int index) {
 	rowGroups[group].rowIndicies[index]++;
 	rowGroups[group].rowIndicies[index] %= 8;
@@ -130,6 +124,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		for (int b = 0; b < 4; b++) {
 			int alternate = b % 2;
+			adjustment = (totalPhases[alternate] + minimumIncrement) / (totalPhases[(alternate + 1) % 2] + minimumIncrement);
 			for (int c = 0; c < fractalLayers[b]; c++) {
 				currentRowIndex = rows[form[b]][(envelopeFractal[b][c].returnRowIndex() + transposition[b]) % 7];
 				currentEnvelopeIndex = envelopeFractal[b][c].returnEnvelopeIndex();
@@ -137,11 +132,11 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 					lastValues[b] = currentValues[b];
 				}
 				else {
-					lastValues[b] = frameSample * fractalLayers[b];
+					lastValues[b] = minimumIncrement;
 				}
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 				if (c > 0) {
-					increment = (1.0 - minimumIncrement) * pow(lastValues[b], pow((float)c, 0.5) + 1.0) + minimumIncrement;
+					increment = adjustment * (1.0 - minimumIncrement) * pow(lastValues[b] / (float)c, pow((float)c, 0.5) + 1.0) + minimumIncrement;
 					if (c == fractalLayers[b] - 1) {
 						totalPhases[alternate] += increment;
 						rowPhases[alternate] += increment;
@@ -187,8 +182,8 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				else {
 					pan[0] = currentValues[3];
 					pan[1] = (1.0 - pan[0]);
-					float frequency = abs(pow(currentValues[1], 5.0));
-					float detune = (2.0 * currentValues[2] - 1.0) * frequency;
+					frequency = abs(pow(currentValues[1], 5.0));
+					detune = (2.0 * currentValues[2] - 1.0) * frequency;
 					phaseIncrement[0] = frequency + detune;
 					phaseIncrement[1] = frequency - detune;
 					for (int d = 0; d < channels; d++) {
@@ -204,30 +199,4 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 			}
 		}
 	}
-}
-
-void ofApp::setUniforms() {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::draw() {
-	refresh();
-	frameBuffer.begin();
-	shader.begin();
-	setUniforms();
-	frameBuffer.draw(0, 0);
-	shader.end();
-	frameBuffer.end();
-	frameBuffer.draw(0.0, 0.0);
-}
-
-void ofApp::refresh() {
-	frameSample = (float)(ofGetFrameRate() / sampleRate);
-	minimumIncrement = pow(frameSample, 2.0);
-	width = (float)ofGetWidth();
-	height = (float)ofGetHeight();
-	frameBuffer.allocate(width, height);
-	ofClear(0, 0, 0, 255);
-	window.set(width, height);
 }
