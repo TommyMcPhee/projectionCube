@@ -95,9 +95,10 @@ void ofApp::setup() {
 			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomuf(), minimumIncrement);
 		}
 	}
+	rowPhase = 0.0;
 	for (int a = 0; a < 2; a++) {
-		totalPhases[a] = 0.0;
-		rowPhases[a] = 1.0 + ofRandomuf();
+		//totalPhases[a] = 0.0;
+		//rowPhases[a] = 1.0 + ofRandomuf();
 		parameterChange[a] = 0;
 	}
 	audioSetup();
@@ -127,7 +128,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		for (int b = 0; b < 4; b++) {
 			int alternate = b % 2;
-			adjustment[alternate] = (totalPhases[alternate] + minimumIncrement) / (totalPhases[(alternate + 1) % 2] + minimumIncrement);
+			//adjustment[alternate] = (totalPhases[alternate] + minimumIncrement) / (totalPhases[(alternate + 1) % 2] + minimumIncrement);
 			for (int c = 0; c < fractalLayers[b]; c++) {
 				int negative = fractalLayers[b] - c - 1;
 				currentRowIndex = rows[form[b]][(envelopeFractal[b][c].returnRowIndex() + transposition[b]) % 7];
@@ -140,10 +141,11 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 					}
 					else{
 						lastValues[b] = minimumIncrement;
-						increment = (1.0 - minimumIncrements[negative]) * pow(lastValues[b] / (float)(c + 1), pow((float)c, 0.5) + 1.0) + minimumIncrements[negative];
-						totalPhases[alternate] += increment;
-						rowPhases[alternate] += increment;
-						if (rowPhases[alternate] > 1.0) {
+						//increment = (1.0 - minimumIncrement) * pow(lastValues[b] / 4.0, 4.0) + minimumIncrement;
+						increment = minimumIncrement;
+						//totalPhases[alternate] += increment;
+						rowPhase += increment;
+						if (rowPhase > 2.0 || change) {
 							for (int d = 0; d < 2; d++) {
 								rowCounters[alternate][d]--;
 								if (rowCounters[alternate][d] < 1) {
@@ -172,12 +174,17 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 											ofSoundStreamClose();
 										}
 										fractalLayers[b] = incrementIndex(2, b) + 2;
-										cout << "new layer" << endl;
 									}
 									rowCounters[alternate][d] = incrementIndex(alternate, d + 2) + 1;
 								}
 							}
-							rowPhases[alternate] = fmod(rowPhases[alternate], 1.0);
+							rowPhase = fmod(rowPhase, 2.0);
+							if (change) {
+								change = false;
+							}
+							else {
+								change = true;
+							}
 						}
 					}
 					envelopeFractal[b][c - 1].setIncrement(increment);

@@ -21,7 +21,7 @@ public:
 	void audioSetup();
 	array<array<int, 8>, 4> rows;
 	array<array<float, 5>, 8> envelopes;
-	array<float, 2> totalPhases, rowPhases;
+	//array<float, 2> totalPhases, rowPhases;
 	struct rowData {
 		array<int, 4> rowForms;
 		array<int, 4> rowElements;
@@ -34,9 +34,9 @@ public:
 	array<int, 4> fractalLayers = { 2, 2, 2, 2 };
 	array<array<envelopeData, 10>, 4> envelopeFractal;
 	array<float, 9> minimumIncrements;
-	float minimumIncrement, lastIncrement, increment, frequency, detune;
+	float minimumIncrement, lastIncrement, increment, rowPhase, frequency, detune;
 	int currentRowIndex, currentEnvelopeIndex;
-	bool end = false;
+	bool end = false, change = false;
 	array<int, 4> parameterChange;
 	array<int, 4> form;
 	array<int, 4> transposition;
