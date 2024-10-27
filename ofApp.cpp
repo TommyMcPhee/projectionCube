@@ -88,7 +88,7 @@ void ofApp::setup() {
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
 	minimumIncrement = 0.0000152587890625;
 	for (int a = 1; a < 10; a++) {
-		minimumIncrements[a - 1] = pow(minimumIncrement, 1.0 / (float)a) / (float)a;
+		minimumIncrements[a - 1] = pow(minimumIncrement, 1.0 / (float)a) / (float)pow(a, pow(a, a));
 	}
 	for (int a = 0; a < 4; a++) {
 		for (int b = 0; b < 10; b++) {
@@ -132,15 +132,14 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				int negative = fractalLayers[b] - c - 1;
 				currentRowIndex = rows[form[b]][(envelopeFractal[b][c].returnRowIndex() + transposition[b]) % 7];
 				currentEnvelopeIndex = envelopeFractal[b][c].returnEnvelopeIndex();
-				if (c < fractalLayers[b] - 1) {
-					lastValues[b] = currentValues[b];
-				}
-				else {
-					lastValues[b] = minimumIncrement;
-				}
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 				if (c > 0) {
-					if (c == fractalLayers[b] - 1) {
+					if (c < fractalLayers[b] - 1) {
+						lastValues[b] = currentValues[b];
+						increment = (1.0 - minimumIncrements[negative]) * pow(lastValues[b] / (float)(c + 1), pow((float)c, 0.5) + 1.0) + minimumIncrements[negative];
+					}
+					else{
+						lastValues[b] = minimumIncrement;
 						increment = (1.0 - minimumIncrements[negative]) * pow(lastValues[b] / (float)(c + 1), pow((float)c, 0.5) + 1.0) + minimumIncrements[negative];
 						totalPhases[alternate] += increment;
 						rowPhases[alternate] += increment;
@@ -181,13 +180,9 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 							rowPhases[alternate] = fmod(rowPhases[alternate], 1.0);
 						}
 					}
-					else {
-						increment = (1.0 - minimumIncrements[negative]) * pow(lastValues[b] / (float)(c + 1), pow((float)c, 0.5) + 1.0) + minimumIncrements[negative];
-					}
 					envelopeFractal[b][c - 1].setIncrement(increment);
 				}
 				else {
-					//modify to bias extreme panning and detune?
 					pan[0] = currentValues[3];
 					pan[1] = 1.0 - pan[0];
 					frequency = abs(pow(currentValues[1], 8.0));
