@@ -30,9 +30,11 @@ public:
 	array<array<int, 2>, 2> rowCounters;
 	array<rowData, 3> rowGroups;
 	int incrementIndex(int group, int index);
+	array<float, 2> adjustment = { 1.0, 1.0 };
 	array<int, 4> fractalLayers = { 2, 2, 2, 2 };
 	array<array<envelopeData, 10>, 4> envelopeFractal;
-	float minimumIncrement, adjustment = 1.0, lastIncrement, increment, frequency, detune;
+	array<float, 9> minimumIncrements;
+	float minimumIncrement, lastIncrement, increment, frequency, detune;
 	int currentRowIndex, currentEnvelopeIndex;
 	bool end = false;
 	array<int, 4> parameterChange;

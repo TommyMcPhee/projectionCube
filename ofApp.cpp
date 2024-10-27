@@ -87,6 +87,9 @@ void ofApp::setup() {
 	envelopes[6] = { 1.0, 0.5, 0.0, 0.5, 1.0 };
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
 	minimumIncrement = 0.0000152587890625;
+	for (int a = 1; a < 10; a++) {
+		minimumIncrements[a - 1] = pow(minimumIncrement, 1.0 / (float)a) / (float)a;
+	}
 	for (int a = 0; a < 4; a++) {
 		for (int b = 0; b < 10; b++) {
 			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomuf(), minimumIncrement);
@@ -124,8 +127,9 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		for (int b = 0; b < 4; b++) {
 			int alternate = b % 2;
-			adjustment = (totalPhases[alternate] + minimumIncrement) / (totalPhases[(alternate + 1) % 2] + minimumIncrement);
+			adjustment[alternate] = (totalPhases[alternate] + minimumIncrement) / (totalPhases[(alternate + 1) % 2] + minimumIncrement);
 			for (int c = 0; c < fractalLayers[b]; c++) {
+				int negative = fractalLayers[b] - c - 1;
 				currentRowIndex = rows[form[b]][(envelopeFractal[b][c].returnRowIndex() + transposition[b]) % 7];
 				currentEnvelopeIndex = envelopeFractal[b][c].returnEnvelopeIndex();
 				if (c < fractalLayers[b] - 1) {
@@ -136,8 +140,8 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				}
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 				if (c > 0) {
-					increment = adjustment * (1.0 - minimumIncrement) * pow(lastValues[b] / (float)c, pow((float)c, 0.5) + 1.0) + minimumIncrement;
-					if (c == fractalLayers[b] - 1) {
+					if (c < fractalLayers[b] - 1) {
+						increment = (1.0 - minimumIncrements[negative]) * pow(lastValues[b] / (float)(c + 1), pow((float)c, 0.5) + 1.0) + minimumIncrements[negative];
 						totalPhases[alternate] += increment;
 						rowPhases[alternate] += increment;
 						if (rowPhases[alternate] > 1.0) {
@@ -177,19 +181,23 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 							rowPhases[alternate] = fmod(rowPhases[alternate], 1.0);
 						}
 					}
+					else {
+						increment = (1.0 - minimumIncrements[negative]) * pow(lastValues[b] / (float)(c + 1), pow((float)c, 0.5) + 1.0) + minimumIncrements[negative];
+					}
 					envelopeFractal[b][c - 1].setIncrement(increment);
 				}
 				else {
+					//modify to bias extreme panning and detune?
 					pan[0] = currentValues[3];
-					pan[1] = (1.0 - pan[0]);
-					frequency = abs(pow(currentValues[1], 5.0));
+					pan[1] = 1.0 - pan[0];
+					frequency = abs(pow(currentValues[1], 8.0));
 					detune = (2.0 * currentValues[2] - 1.0) * frequency;
 					phaseIncrement[0] = frequency + detune;
 					phaseIncrement[1] = frequency - detune;
 					for (int d = 0; d < channels; d++) {
 						phase[d] += phaseIncrement[d];
 						phase[d] = fmod(phase[d], TWO_PI);
-						sample[d] = sin(phase[d]) * sqrt(pan[d]) * abs(pow(currentValues[0] * pow(1.0 - phaseIncrement[d], 2.0), 3.0));
+						sample[d] = sin(phase[d]) * sqrt(pan[d]) * abs(pow(currentValues[0] * pow(1.0 - phaseIncrement[d], 2.0), 4.0));
 						if (end) {
 							sample[d] = 0.0;
 						}
