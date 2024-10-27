@@ -140,7 +140,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				}
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 				if (c > 0) {
-					if (c < fractalLayers[b] - 1) {
+					if (c == fractalLayers[b] - 1) {
 						increment = (1.0 - minimumIncrements[negative]) * pow(lastValues[b] / (float)(c + 1), pow((float)c, 0.5) + 1.0) + minimumIncrements[negative];
 						totalPhases[alternate] += increment;
 						rowPhases[alternate] += increment;
