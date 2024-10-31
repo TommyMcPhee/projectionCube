@@ -88,6 +88,7 @@ void ofApp::setup() {
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
 	minimumIncrement = 0.0000152587890625;
 	for (int a = 1; a < 10; a++) {
+		//write an algorithm which correlates with sample rate
 		minimumIncrements[a - 1] = pow(minimumIncrement, 1.0 / (float)a) / (float)pow(a, pow(a, a));
 	}
 	for (int a = 0; a < 4; a++) {
@@ -139,7 +140,7 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 						lastValues[b] = currentValues[b];
 						increment = (1.0 - minimumIncrements[negative]) * pow(lastValues[b] / (float)(c + 1), pow((float)c, 0.5) + 1.0) + minimumIncrements[negative];
 					}
-					else{
+					else {
 						lastValues[b] = minimumIncrement;
 						//increment = (1.0 - minimumIncrement) * pow(lastValues[b] / 4.0, 4.0) + minimumIncrement;
 						increment = minimumIncrement;
