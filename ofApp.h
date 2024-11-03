@@ -12,6 +12,13 @@ public:
 	void resetTemporaryIndicies(int rowSize);
 	void printRows();
 	void setup();
+	ofstream wavFile;
+	const int byteDepth = 2;
+	int preAudioP, maxSampleInt;
+	void setupWav();
+	void writeToFile(ofstream& file, int value, int size);
+	int sampleInt;
+	void recordSample(int channel);
 	ofSoundStreamSettings streamSettings;
 	static const int sampleRate = 48000;
 	static const int bufferSize = 256;
@@ -29,10 +36,11 @@ public:
 	array<array<int, 2>, 2> rowCounters;
 	array<rowData, 3> rowGroups;
 	int incrementIndex(int group, int index);
+	float bipolar(float input);
 	array<int, 4> fractalLayers = { 2, 2, 2, 2 };
 	array<array<envelopeData, 9>, 4> envelopeFractal;
 	array<float, 8> minimums;
-	float minimumIncrement, lastIncrement, increment, rowPhase, frequency, detune;
+	float minimumIncrement, rescale, lastIncrement, increment, rowPhase, frequency, detune;
 	int currentRowIndex, currentEnvelopeIndex;
 	bool end = false, change = false;
 	array<int, 4> parameterChange;
@@ -45,6 +53,4 @@ public:
 	array<float, 2> phase;
 	array<float, 2> sample;
 	void audioOut(ofSoundBuffer& buffer);
-
-	array<float, 9> minimumIncrements = { 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1 };
 };

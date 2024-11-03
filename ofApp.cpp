@@ -87,6 +87,7 @@ void ofApp::setup() {
 	envelopes[6] = { 1.0, 0.5, 0.0, 0.5, 1.0 };
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
 	minimumIncrement = 0.0000152587890625;
+	rescale = sqrt(8);
 	for (int a = 1; a < 9; a++) {
 		minimums[a - 1] = 1.0 / pow(2.0, pow(pow((float)a, 0.5) + 1.0, 2.0));
 	}
@@ -95,17 +96,44 @@ void ofApp::setup() {
 			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomuf(), minimumIncrement);
 		}
 	}
+
 	rowPhase = 0.0;
 	for (int a = 0; a < 2; a++) {
 		parameterChange[a] = 0;
 	}
+	setupWav();
 	audioSetup();
-	//should be unneccessary but isn't
-	for (int a = 0; a < 9; a++) {
-		//this code objectively should not be necessary, it can't run when deleted
-		minimumIncrements[a] = pow(1.0 / 12.0, (float)(a + 1) / pow(1.0, 0.0));
+	//WHY IS THIS NEEDED?!? Array subscript out of range if the for loop is deleted
+	for (int a = 0; a < 0; a++) {
 	}
-	//
+}
+
+void ofApp::setupWav() {
+	wavFile.open("projectionCubeRecording.wav", ios::binary);
+	wavFile << "RIFF";
+	wavFile << "----";
+	wavFile << "WAVE";
+	wavFile << "fmt ";
+	writeToFile(wavFile, byteDepth * 8, 4);
+	writeToFile(wavFile, 1, 2);
+	writeToFile(wavFile, channels, 2);
+	writeToFile(wavFile, sampleRate, 4);
+	writeToFile(wavFile, sampleRate * byteDepth, 4);
+	writeToFile(wavFile, byteDepth, 2);
+	writeToFile(wavFile, byteDepth * 8, 2);
+	wavFile << "data";
+	wavFile << "----";
+	preAudioP = wavFile.tellp();
+	maxSampleInt = pow(2, byteDepth * 8 - 1) - 1;
+}
+
+void ofApp::writeToFile(ofstream& file, int value, int size) {
+	file.write(reinterpret_cast<const char*> (&value), size);
+}
+
+void ofApp::recordSample(int channel) {
+	sampleInt = static_cast<int>(sample[channel] * maxSampleInt);
+	wavFile.write(reinterpret_cast<char*> (&sampleInt), byteDepth);
 }
 
 void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
@@ -126,6 +154,10 @@ int ofApp::incrementIndex(int group, int index) {
 	rowGroups[group].rowIndicies[index] %= 8;
 	rowGroups[group].rowElements[index] = rows[rowGroups[group].rowForms[index]][rowGroups[group].rowIndicies[index]];
 	return rowGroups[group].rowElements[index];
+}
+
+float ofApp::bipolar(float input) {
+	return input * 2.0 - 1.0;
 }
 
 void ofApp::audioOut(ofSoundBuffer& buffer) {
@@ -170,11 +202,13 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 									}
 									if (rowGroups[alternate].rowIndicies[alternate + 2] == 7) {
 										if (rowGroups[2].rowIndicies[b] == 7) {
-											cout << "end" << b << endl;
+											cout << "end" << endl;
 											end = true;
+											wavFile.close();
 											ofSoundStreamClose();
 										}
 										fractalLayers[b] = incrementIndex(2, b) + 2;
+										//rescale = sqrt((float)(10 - fractalLayers[b])) + 1.0;
 									}
 									rowCounters[alternate][d] = incrementIndex(alternate, d + 2) + 1;
 								}
@@ -191,20 +225,23 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 					envelopeFractal[b][c - 1].setIncrement(increment);
 				}
 				else {
-					pan[0] = currentValues[3];
-					pan[1] = 1.0 - pan[0];
-					frequency = abs(pow(currentValues[1], 8.0));
-					detune = (2.0 * currentValues[2] - 1.0) * frequency;
-					phaseIncrement[0] = frequency + detune;
-					phaseIncrement[1] = frequency - detune;
-					for (int d = 0; d < channels; d++) {
-						phase[d] += phaseIncrement[d];
-						phase[d] = fmod(phase[d], TWO_PI);
-						sample[d] = sin(phase[d]) * sqrt(pan[d]) * abs(pow(currentValues[0] * pow(1.0 - phaseIncrement[d], 2.0), 4.0));
-						if (end) {
-							sample[d] = 0.0;
+					if (b == 3) {
+						pan[0] = sinh(bipolar(currentValues[3])) * 0.5 + 0.5;
+						pan[1] = 1.0 - pan[0];
+						frequency = abs(pow(currentValues[1], rescale));
+						detune = sinh(bipolar(currentValues[2])) * frequency;
+						phaseIncrement[0] = frequency + detune;
+						phaseIncrement[1] = frequency - detune;
+						for (int d = 0; d < channels; d++) {
+							phase[d] += phaseIncrement[d];
+							phase[d] = fmod(phase[d], TWO_PI);
+							sample[d] = sin(phase[d]) * sqrt(abs(pan[d])) * abs(pow(currentValues[0] * pow(1.0 - phaseIncrement[d], rescale), rescale));
+							if (end) {
+								sample[d] = 0.0;
+							}
+							recordSample(d);
+							buffer[a * channels + d] = sample[d];
 						}
-						buffer[a * channels + d] = sample[d];
 					}
 				}
 			}
