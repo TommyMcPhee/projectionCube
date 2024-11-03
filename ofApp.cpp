@@ -87,22 +87,25 @@ void ofApp::setup() {
 	envelopes[6] = { 1.0, 0.5, 0.0, 0.5, 1.0 };
 	envelopes[7] = { 1.0, 0.0, oneThird, twoThirds, 1.0 };
 	minimumIncrement = 0.0000152587890625;
-	for (int a = 1; a < 10; a++) {
-		//write an algorithm which correlates with sample rate
-		minimumIncrements[a - 1] = pow(minimumIncrement, 1.0 / (float)a) / (float)pow(a, pow(a, a));
+	for (int a = 1; a < 9; a++) {
+		minimums[a - 1] = 1.0 / pow(2.0, pow(pow((float)a, 0.5) + 1.0, 2.0));
 	}
 	for (int a = 0; a < 4; a++) {
-		for (int b = 0; b < 10; b++) {
+		for (int b = 0; b < 9; b++) {
 			envelopeFractal[a][b] = envelopeData(rand() % 8, ofRandomuf(), minimumIncrement);
 		}
 	}
 	rowPhase = 0.0;
 	for (int a = 0; a < 2; a++) {
-		//totalPhases[a] = 0.0;
-		//rowPhases[a] = 1.0 + ofRandomuf();
 		parameterChange[a] = 0;
 	}
 	audioSetup();
+	//should be unneccessary but isn't
+	for (int a = 0; a < 9; a++) {
+		//this code objectively should not be necessary, it can't run when deleted
+		minimumIncrements[a] = pow(1.0 / 12.0, (float)(a + 1) / pow(1.0, 0.0));
+	}
+	//
 }
 
 void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
@@ -129,22 +132,19 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < buffer.getNumFrames(); a++) {
 		for (int b = 0; b < 4; b++) {
 			int alternate = b % 2;
-			//adjustment[alternate] = (totalPhases[alternate] + minimumIncrement) / (totalPhases[(alternate + 1) % 2] + minimumIncrement);
 			for (int c = 0; c < fractalLayers[b]; c++) {
-				int negative = fractalLayers[b] - c - 1;
+				int negative = fractalLayers[b] - c;
 				currentRowIndex = rows[form[b]][(envelopeFractal[b][c].returnRowIndex() + transposition[b]) % 7];
 				currentEnvelopeIndex = envelopeFractal[b][c].returnEnvelopeIndex();
 				currentValues[b] = envelopeFractal[b][c].lerp(envelopes[currentRowIndex][currentEnvelopeIndex], envelopes[currentRowIndex][currentEnvelopeIndex + 1]);
 				if (c > 0) {
 					if (c < fractalLayers[b] - 1) {
 						lastValues[b] = currentValues[b];
-						increment = (1.0 - minimumIncrements[negative]) * pow(lastValues[b] / (float)(c + 1), pow((float)c, 0.5) + 1.0) + minimumIncrements[negative];
+						increment = (1.0 - minimums[c]) * pow(lastValues[b] / (float)(c + 1), pow((float)c, 0.5) + 1.0) + minimums[c];
 					}
 					else {
 						lastValues[b] = minimumIncrement;
-						//increment = (1.0 - minimumIncrement) * pow(lastValues[b] / 4.0, 4.0) + minimumIncrement;
 						increment = minimumIncrement;
-						//totalPhases[alternate] += increment;
 						rowPhase += increment;
 						if (rowPhase > 2.0 || change) {
 							for (int d = 0; d < 2; d++) {
